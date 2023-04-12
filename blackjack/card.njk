@@ -1,0 +1,8 @@
+<div class="card {{ suit }}" data-value="{{ value }}" data-suit="{{ suit }}">
+  <div>{{ value }}
+  {%- if suit === 'spades' -%}&spades;
+  {%- elif suit === 'clubs' -%}&clubs;
+  {%- elif suit === 'hearts' -%}&hearts;
+  {%- elif suit === 'diamonds' -%}&#9830;{%- endif -%}</div>
+  <button id="{{value}}_{{suit}}_dec">&minus;</button><input id="{{value}}_{{suit}}_count" value="0"></input><button id="{{value}}_{{suit}}_inc">&plus;</button>
+</div>
