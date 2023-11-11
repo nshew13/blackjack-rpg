@@ -2,11 +2,13 @@
 import Card from '@/components/Card.vue';
 import {PlayingCards} from '@/utilities/PlayingCards';
 
-const props = defineProps<{
-  facing: 'up' | 'down',
-}>();
+const props = withDefaults(defineProps<{
+  facing?: 'up' | 'down',
+}>(), {
+  facing: 'down',
+})
 
-const deck = PlayingCards.shuffleDeck(PlayingCards.generateDeck());
+const deck = PlayingCards.shuffleDeck(PlayingCards.generateDeck({ facing: props.facing }));
 </script>
 
 <template>

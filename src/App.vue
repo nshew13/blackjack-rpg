@@ -3,7 +3,7 @@ import Deck from "@/components/Deck.vue";
 </script>
 
 <template>
-  <Deck></Deck>
+  <Deck facing="up"></Deck>
 </template>
 
 <style scoped>

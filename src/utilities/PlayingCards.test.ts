@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import PlayingCards from './PlayingCards'
+import { PlayingCards } from './PlayingCards'
 
 describe('PlayingCards', () => {
     it('generates a deck of 52 cards', () => {
@@ -12,9 +12,9 @@ describe('PlayingCards', () => {
     it.skip('evenly shuffles deck', () => {
         const deck = PlayingCards.generateDeck();
 
-        for(i=0; i < 100_000; i++) {
-            const shuffledDeck = PlayingCards.shuffleDeck(deck);
-        }
+        // for(i=0; i < 100_000; i++) {
+        //     const shuffledDeck = PlayingCards.shuffleDeck(deck);
+        // }
 
         expect(deck.length).toBe(52);
     })
