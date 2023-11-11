@@ -1,44 +1,64 @@
 <script setup lang="ts">
+import {ref} from 'vue';
 import {PlayingCards} from '@/utilities/PlayingCards';
 import SuitSymbol from '@/components/SuitSymbol.vue';
-import type {TCardSuit, TCardValue} from '@/utilities/PlayingCards';
+import type {ICard} from '@/utilities/PlayingCards';
 
 const props = defineProps<{
-  value: TCardValue,
-  suit: TCardSuit,
-}>()
+  card: ICard,
+}>();
 
-const color = PlayingCards.getColor(props.suit);
+let isFaceUp = ref(props.card.facing === 'up');
+const color = PlayingCards.getColor(props.card.suit);
+
+const flipCard = () => {
+  console.log('flipping');
+  isFaceUp.value = !isFaceUp.value;
+}
 </script>
 
 <template>
-  <div class="card">
-    <div class="corner top-left">
-      {{ props.value }} <SuitSymbol :suit="props.suit"></SuitSymbol>
-    </div>
-    <div class="corner bottom-right">
-      {{ props.value }} <SuitSymbol :suit="props.suit"></SuitSymbol>
-    </div>
+  <div
+      class="card"
+      :class="{'face-down': !isFaceUp}"
+      @click.stop="flipCard"
+  >
+    <template v-if="isFaceUp">
+      <div class="corner top-left">
+        {{ props.card.value }} <SuitSymbol :suit="props.card.suit"></SuitSymbol>
+      </div>
+      <div class="corner bottom-right">
+        {{ props.card.value }} <SuitSymbol :suit="props.card.suit"></SuitSymbol>
+      </div>
+    </template>
   </div>
 </template>
 
 <style scoped>
 .card {
-  --card-padding: 20px;
+  --card-height: 150px;
+  --card-padding: calc(0.05 * var(--card-height));
 
   position: relative;
 
   aspect-ratio: 25 / 35;
-  height: 350px;
+  height: var(--card-height);
   width: auto;
+  margin: var(--card-padding);
 
   padding: var(--card-padding);
-  font-size: 50px;
+  font-size: max(16pt, calc(0.15 * var(--card-height)));
   line-height: 1;
 
   color: v-bind(color);
+  text-align: center;
   background-color: white;
   border-radius: 10px;
+
+  &.face-down {
+    background: rgb(2,0,36);
+    background: radial-gradient(circle, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 9%, rgba(0,212,255,1) 32%, rgba(9,9,121,1) 100%);
+  }
 }
 .corner {
   position: absolute;

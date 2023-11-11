@@ -4,21 +4,36 @@ const Suits = ['clubs', 'diamonds', 'hearts', 'spades'] as const;
 
 export type TCardValue = typeof Values[number];
 export type TCardSuit = typeof Suits[number];
-export type TCardColor = 'red' | 'black';
+export type TCardFacing = 'down' | 'up';
+export type TCardColor = 'black' | 'red';
 export interface ICard {
-    value: TCardValue;
+    facing: TCardFacing;
     suit: TCardSuit;
+    value: TCardValue;
 }
 export type TDeck = ICard[];
+
+interface IParamsGenerateDeck {
+    facing?: TCardFacing;
+    numDecks?: number;
+    numJokers?: number;
+}
 
 // TODO: add optional Joker(s)
 
 export class PlayingCards {
-    static generateDeck(numJokers = 0, numDecks = 1): TDeck {
+    static generateDeck(params: IParamsGenerateDeck = {}): TDeck {
+        const {
+            facing = 'down',
+            numJokers = 0,
+            numDecks = 1,
+        } = params;
+
+
         const deck: TDeck = [];
         Suits.forEach(suit => {
             Values.forEach(value => {
-                deck.push({ value, suit });
+                deck.push({ facing, suit, value });
             })
         });
 
@@ -26,7 +41,11 @@ export class PlayingCards {
         return JSON.parse(JSON.stringify(deck));
     }
 
-    static getColor(suit: TCardSuit): TCardColor {
+    static getCardID(card: ICard): string {
+        return `${card.suit}-${card.value}`;
+    }
+
+   static getColor(suit: TCardSuit): TCardColor {
         return suit === ('hearts' || 'diamonds') ? 'red' : 'black';
     }
 
@@ -54,18 +73,19 @@ export class PlayingCards {
      * @param deck
      */
     static shuffleDeck(deck: TDeck): TDeck {
-        let countUnshuffled = deck.length;
+        const copiedDeck = JSON.parse(JSON.stringify(deck));
+        let countUnshuffled = copiedDeck.length;
 
         while (countUnshuffled) {
             // Pick a remaining element…
             const randomUnshuffledCard = Math.floor(Math.random() * countUnshuffled--);
 
             // And swap it with the current element.
-            const swapCard: ICard = deck[countUnshuffled];
-            deck[countUnshuffled] = deck[randomUnshuffledCard];
-            deck[randomUnshuffledCard] = swapCard;
+            const swapCard: ICard = copiedDeck[countUnshuffled];
+            copiedDeck[countUnshuffled] = copiedDeck[randomUnshuffledCard];
+            copiedDeck[randomUnshuffledCard] = swapCard;
         }
 
-        return deck;
+        return copiedDeck;
     }
 }
