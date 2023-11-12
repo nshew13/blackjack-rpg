@@ -1,0 +1,8 @@
+@import './base.css';
+
+:root {
+  --card-height: 150px;
+  --card-area-height: calc(var(--card-height) + 50px);
+  --card-padding: calc(0.05 * var(--card-height));
+  --card-corner-radius: 10px;
+}

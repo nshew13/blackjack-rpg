@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Deck from "@/components/Deck.vue";
+import BlackjackTable from '@/components/BlackjackTable.vue';
 </script>
 
 <template>
-  <Deck facing="up"></Deck>
+  <BlackjackTable></BlackjackTable>
 </template>
 
 <style scoped>

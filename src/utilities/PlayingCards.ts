@@ -37,7 +37,6 @@ export class PlayingCards {
             })
         });
 
-        console.log('deck', deck);
         return JSON.parse(JSON.stringify(deck));
     }
 

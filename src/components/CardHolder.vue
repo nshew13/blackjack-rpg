@@ -1,38 +1,17 @@
 <script setup lang="ts">
-import Card from '@/components/Card.vue';
-import {PlayingCards} from '@/utilities/PlayingCards';
-import type {ICard, TDeck} from '@/utilities/PlayingCards';
-
-const props = withDefaults(defineProps<{
-  cards: TDeck,
-  facing?: 'up' | 'down',
+const props = defineProps<{
+  isActive?: boolean,
   label?: string,
-}>(), {
-  facing: 'down',
-})
-
-const emit = defineEmits<{
-  (e: 'click', event: Event, card: ICard): void
-}>()
+}>();
 
 const hasLabel = typeof props?.label !== 'undefined';
-
-const emitCardClick = (event: Event) => {
-  if(props.cards.length > 0) {
-    emit('click', event, <ICard>props.cards.pop());
-  }
-}
 </script>
 
 <template>
-  <div class="card-holder" @click.stop="emitCardClick">
+  <div class="card-holder" :class="{'active': props.isActive}">
     <div v-if="hasLabel" class="deck-label">{{ props.label }}</div>
     <div :class="{ 'deck-area': hasLabel }">
-      <Card
-          v-for="card in props.cards"
-          :key="PlayingCards.getCardID(card)"
-          :card="card"
-      ></Card>
+      <slot></slot>
     </div>
   </div>
 </template>
@@ -47,6 +26,16 @@ const emitCardClick = (event: Event) => {
   flex-direction: column;
   flex-wrap: nowrap;
   align-items: center;
+
+  &.active {
+    .deck-area {
+      border-color: white;
+    }
+    .deck-label {
+      color: white;
+    }
+
+  }
 }
 .deck-area {
   position: relative;
@@ -55,9 +44,9 @@ const emitCardClick = (event: Event) => {
   height: var(--card-area-height);
   width: auto;
   margin: var(--card-padding);
+  border-radius: var(--card-corner-radius);
 
   border: 3px double var(--color-deck-label);
-  border-radius: var(--card-corner-radius);
 
   & :deep(.card) {
     position: absolute;

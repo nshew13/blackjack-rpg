@@ -11,17 +11,17 @@ const props = defineProps<{
 let isFaceUp = ref(props.card.facing === 'up');
 const color = PlayingCards.getColor(props.card.suit);
 
-const flipCard = () => {
-  console.log('flipping');
-  isFaceUp.value = !isFaceUp.value;
-}
+// const flipCard = () => {
+//   isFaceUp.value = !isFaceUp.value;
+// }
+// @click.stop="flipCard"
+
 </script>
 
 <template>
   <div
       class="card"
       :class="{'face-down': !isFaceUp}"
-      @click.stop="flipCard"
   >
     <template v-if="isFaceUp">
       <div class="corner top-left">
@@ -36,9 +36,6 @@ const flipCard = () => {
 
 <style scoped>
 .card {
-  --card-height: 150px;
-  --card-padding: calc(0.05 * var(--card-height));
-
   position: relative;
 
   aspect-ratio: 25 / 35;
@@ -53,7 +50,7 @@ const flipCard = () => {
   color: v-bind(color);
   text-align: center;
   background-color: white;
-  border-radius: 10px;
+  border-radius: var(--card-corner-radius);
 
   &.face-down {
     background: rgb(2,0,36);
