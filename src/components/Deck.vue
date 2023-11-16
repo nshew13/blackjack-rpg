@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import Card from '@/components/Card.vue';
-import {PlayingCards} from '@/utilities/PlayingCards';
 import type {ICard, TDeck} from '@/utilities/PlayingCards';
 
 const props = withDefaults(defineProps<{
   cards: TDeck,
   facing?: 'up' | 'down',
-  label?: string,
 }>(), {
   facing: 'down',
 })
@@ -15,57 +13,24 @@ const emit = defineEmits<{
   (e: 'click', event: Event, card: ICard): void
 }>()
 
-const hasLabel = typeof props?.label !== 'undefined';
+const hasCard = props.cards?.length > 0;
 
 const emitCardClick = (event: Event) => {
   if(props.cards.length > 0) {
-    emit('click', event, <ICard>props.cards.pop());
+    emit('click', event, <ICard>props.cards.shift());
   }
 }
 </script>
 
 <template>
-  <div class="card-holder" @click.stop="emitCardClick">
-    <div v-if="hasLabel" class="deck-label">{{ props.label }}</div>
-    <div :class="{ 'deck-area': hasLabel }">
-      <Card
-          v-for="card in props.cards"
-          :key="PlayingCards.getCardID(card)"
-          :card="card"
-      ></Card>
-    </div>
+  <div class="deck" @click.stop="emitCardClick">
+    <Card v-if="hasCard" :card="cards[0]"></Card>
   </div>
 </template>
 
 <style scoped>
-.card-holder {
-  --color-deck-label: goldenrod;
-
-  position: relative;
-
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  align-items: center;
-}
-.deck-area {
-  position: relative;
-
-  aspect-ratio: 25 / 35;
-  height: var(--card-area-height);
-  width: auto;
-  margin: var(--card-padding);
-
-  border: 3px double var(--color-deck-label);
-  border-radius: var(--card-corner-radius);
-
-  & :deep(.card) {
-    position: absolute;
-    top: var(--card-padding);
-    left: var(--card-padding);
-  }
-}
-.deck-label {
-  color: var(--color-deck-label);
-}
+/*.deck {
+  height: var(--card-height);
+  width: var(--card-width);
+}*/
 </style>

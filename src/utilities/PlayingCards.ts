@@ -25,8 +25,8 @@ export class PlayingCards {
     static generateDeck(params: IParamsGenerateDeck = {}): TDeck {
         const {
             facing = 'down',
-            numJokers = 0,
-            numDecks = 1,
+            // numJokers = 0,
+            // numDecks = 1,
         } = params;
 
 

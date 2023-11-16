@@ -36,17 +36,18 @@ const color = PlayingCards.getColor(props.card.suit);
 
 <style scoped>
 .card {
-  position: relative;
+  position: relative; /* for corner positioning */
 
   aspect-ratio: 25 / 35;
   height: var(--card-height);
   width: auto;
-  margin: var(--card-padding);
+  margin: var(--card-margin);
 
   padding: var(--card-padding);
   font-size: max(16pt, calc(0.15 * var(--card-height)));
   line-height: 1;
 
+  /* TODO: this gives away color in markup */
   color: v-bind(color);
   text-align: center;
   background-color: white;

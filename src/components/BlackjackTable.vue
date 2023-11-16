@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import {Ref, ref} from 'vue';
+import {ref} from 'vue';
 import Deck from '@/components/Deck.vue';
 import CardHolder from '@/components/CardHolder.vue';
 import {PlayingCards} from '@/utilities/PlayingCards';
+import type {Ref} from 'vue';
 import type {ICard, TDeck} from '@/utilities/PlayingCards';
+import Card from '@/components/Card.vue';
 
-const playerDeck: TDeck = ref([]);
-const houseDeck: TDeck = ref([]);
+const houseDeck: Ref<TDeck> = ref([]);
+const playerDeck: Ref<TDeck> = ref([]);
+const splitDeck: Ref<TDeck> = ref([]);
+const numPlayers: Ref<number> = ref(1);
+
+const playerDecks: Ref<TDeck> = ref([]);
+
 
 const activeDeckName: Ref<'house' | 'player' | 'split'> = ref('player');
-
-/**
- * The last card in the deck array will be the top card. It's just easier
- * to let the DOM elements stack as they will. It's also easier to pop
- * cards off the end.
- */
 const deck = PlayingCards.shuffleDeck(PlayingCards.generateDeck());
 
 const moveCard = (event: Event, card: ICard) => {
@@ -32,18 +33,56 @@ const moveCard = (event: Event, card: ICard) => {
 
 <template>
   <div class="table">
-    <CardHolder label="Draw">
-      <Deck :cards="deck" @click.stop="moveCard"></Deck>
+    <section class="decks">
+      <CardHolder label="Draw" class="draw-deck">
+        <Deck :cards="deck" @click.stop="moveCard"></Deck>
+      </CardHolder>
+      <CardHolder label="Discard" class="discard-pile"></CardHolder>
+    </section>
+
+    <section class="players">
+      <CardHolder
+          v-for="n in numPlayers"
+          :key="n"
+          :label="`Player ${n}`"
+          :is-active="activeDeckName === 'player'"
+          @click.stop="activeDeckName = 'player'"
+          class="player-dealt"
+          :columns="4"
+      >
+        <Card
+            v-for="card in playerDeck"
+            :key="PlayingCards.getCardID(card)"
+            :card="card"
+        ></Card>
+      </CardHolder>
+    </section>
+
+    <CardHolder
+        label="Split"
+        v-if="splitDeck.length > 0"
+        :is-active="activeDeckName === 'split'"
+        @click.stop="activeDeckName = 'split'"
+        class="split-dealt"
+    >
+      <Deck :cards="splitDeck"></Deck>
     </CardHolder>
-    <CardHolder label="Discard"></CardHolder>
-    <CardHolder label="Player" :is-active="activeDeckName === 'player'" @click.stop="activeDeckName = 'player'">
-      <Deck :cards="playerDeck"></Deck>
-    </CardHolder>
-    <CardHolder label="House" :is-active="activeDeckName === 'house'" @click.stop="activeDeckName = 'house'">
+
+    <CardHolder
+        label="House"
+        :is-active="activeDeckName === 'house'"
+        @click.stop="activeDeckName = 'house'"
+        class="house-dealt"
+    >
       <Deck :cards="houseDeck"></Deck>
     </CardHolder>
   </div>
 </template>
 
 <style scoped>
+.decks {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
 </style>

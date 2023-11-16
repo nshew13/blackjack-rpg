@@ -1,60 +1,59 @@
 <script setup lang="ts">
-const props = defineProps<{
+const props = withDefaults(defineProps<{
+  columns?: number,
   isActive?: boolean,
   label?: string,
-}>();
-
-const hasLabel = typeof props?.label !== 'undefined';
+}>(), {
+  columns: 1,
+  label: '',
+});
 </script>
 
 <template>
   <div class="card-holder" :class="{'active': props.isActive}">
-    <div v-if="hasLabel" class="deck-label">{{ props.label }}</div>
-    <div :class="{ 'deck-area': hasLabel }">
-      <slot></slot>
+    <div class="label">{{ props.label }}</div>
+    <div class="card-area">
+      <slot>
+        <!-- expected <Card>(s) or <Deck> -->
+      </slot>
     </div>
   </div>
 </template>
 
 <style scoped>
 .card-holder {
-  --color-deck-label: goldenrod;
+  --color-label: goldenrod;
 
-  position: relative;
-
+  /* center label and area along vertical axis */
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
   align-items: center;
 
   &.active {
-    .deck-area {
+    .card-area {
       border-color: white;
     }
-    .deck-label {
+    .label {
       color: white;
     }
 
   }
 }
-.deck-area {
-  position: relative;
+.card-area {
+  --area-border-width: 3px;
 
-  aspect-ratio: 25 / 35;
-  height: var(--card-area-height);
-  width: auto;
+  display: flex;
+  justify-content: space-around;
+
+  min-height: calc(var(--card-box-height) + var(--area-border-width) * 2);
+  min-width: calc(var(--card-box-width) * v-bind(columns) + var(--area-border-width) * 2);
   margin: var(--card-padding);
   border-radius: var(--card-corner-radius);
 
-  border: 3px double var(--color-deck-label);
-
-  & :deep(.card) {
-    position: absolute;
-    top: var(--card-padding);
-    left: var(--card-padding);
-  }
+  border: var(--area-border-width) double var(--color-label);
 }
-.deck-label {
-  color: var(--color-deck-label);
+.label {
+  color: var(--color-label);
 }
 </style>
