@@ -34,10 +34,10 @@ const moveCard = (event: Event, card: ICard) => {
 <template>
   <div class="table">
     <section class="decks">
-      <CardHolder label="Draw" class="draw-deck">
+      <CardHolder label="Draw" class="draw-deck" single-column>
         <Deck :cards="deck" @click.stop="moveCard"></Deck>
       </CardHolder>
-      <CardHolder label="Discard" class="discard-pile"></CardHolder>
+      <CardHolder label="Discard" class="discard-pile" single-column></CardHolder>
     </section>
 
     <section class="players">
@@ -48,7 +48,6 @@ const moveCard = (event: Event, card: ICard) => {
           :is-active="activeDeckName === 'player'"
           @click.stop="activeDeckName = 'player'"
           class="player-dealt"
-          :columns="4"
       >
         <Card
             v-for="card in playerDeck"

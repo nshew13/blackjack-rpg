@@ -53,9 +53,18 @@ const color = PlayingCards.getColor(props.card.suit);
   background-color: white;
   border-radius: var(--card-corner-radius);
 
+  box-shadow: 0 0 5px black;
+
   &.face-down {
     background: rgb(2,0,36);
     background: radial-gradient(circle, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 9%, rgba(0,212,255,1) 32%, rgba(9,9,121,1) 100%);
+  }
+
+  transition: transform 250ms;
+
+  &:hover {
+    z-index: 64; /* above other cards in standard deck */
+    transform: rotate(-5deg) translateY(-20px);
   }
 }
 .corner {
