@@ -48,6 +48,7 @@ const moveCard = (event: Event, card: ICard) => {
           :is-active="activeDeckName === 'player'"
           @click.stop="activeDeckName = 'player'"
           class="player-dealt"
+          :total="PlayingCards.totalHand(playerDeck)"
       >
         <Card
             v-for="card in playerDeck"

@@ -27,10 +27,3 @@ const emitCardClick = (event: Event) => {
     <Card v-if="hasCard" :card="cards[0]"></Card>
   </div>
 </template>
-
-<style scoped>
-/*.deck {
-  height: var(--card-height);
-  width: var(--card-width);
-}*/
-</style>

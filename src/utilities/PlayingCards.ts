@@ -44,6 +44,25 @@ export class PlayingCards {
         return `${card.suit}-${card.value}`;
     }
 
+    // TODO: allow config for rules (e.g., facecard = 10, A = 1 or 11)
+    static getCardValue(card: ICard, params: Record<string, unknown>): number {
+        switch (card.value) {
+            case 'A':
+                if(params?.cardsInHand && <number>params.cardsInHand <= 2) {
+                    return 11;
+                }
+                return 1; // TODO: improve
+
+            case 'K':
+            case 'Q':
+            case 'J':
+                return 10;
+
+            default:
+                return parseInt(card.value, 10);
+        }
+    }
+
    static getColor(suit: TCardSuit): TCardColor {
         return suit === ('hearts' || 'diamonds') ? 'red' : 'black';
     }
@@ -86,5 +105,16 @@ export class PlayingCards {
         }
 
         return copiedDeck;
+    }
+
+    static totalHand(hand: TDeck): number {
+        return hand.reduce(
+            (total, card) => {
+                return total + this.getCardValue(card, {
+                    cardsInHand: hand.length
+                });
+            },
+            0
+        );
     }
 }

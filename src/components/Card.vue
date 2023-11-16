@@ -42,9 +42,10 @@ const color = PlayingCards.getColor(props.card.suit);
   height: var(--card-height);
   width: auto;
   margin: var(--card-margin);
-
   padding: var(--card-padding);
-  font-size: max(16pt, calc(0.15 * var(--card-height)));
+
+  font-family: "BioRhyme", "Droid Serif", serif;
+  font-size: 2rem;
   line-height: 1;
 
   /* TODO: this gives away color in markup */
@@ -58,13 +59,6 @@ const color = PlayingCards.getColor(props.card.suit);
   &.face-down {
     background: rgb(2,0,36);
     background: radial-gradient(circle, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 9%, rgba(0,212,255,1) 32%, rgba(9,9,121,1) 100%);
-  }
-
-  transition: transform 250ms;
-
-  &:hover {
-    z-index: 64; /* above other cards in standard deck */
-    transform: rotate(-5deg) translateY(-20px);
   }
 }
 .corner {
