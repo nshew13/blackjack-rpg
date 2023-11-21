@@ -6,21 +6,24 @@ const props = withDefaults(defineProps<{
   total?: number,
 }>(), {
   label: '',
-  total: 0,
   singleColumn: false,
 });
+
+const showTotal = typeof props?.total !== 'undefined';
 </script>
 
 <template>
   <div class="card-holder" :class="{'active': isActive}">
-    <div class="label">{{ label }}</div>
+    <div class="label">
+      <slot name="label">{{ label }}</slot>
+    </div>
     <div class="card-row">
       <div class="card-area" :class="{'single-column': singleColumn}">
         <slot>
           <!-- expected <Card>(s) or <Deck> -->
         </slot>
       </div>
-      <div v-if="total > 0" class="area-total">{{ total }}</div>
+      <div v-if="showTotal" class="area-total">{{ total }}</div>
     </div>
   </div>
 </template>
@@ -89,5 +92,6 @@ const props = withDefaults(defineProps<{
 .area-total {
   font-family: "BioRhyme", "Droid Serif", serif;
   font-size: 36pt;
+  min-width: 2em;
 }
 </style>

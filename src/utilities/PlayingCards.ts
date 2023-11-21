@@ -19,6 +19,10 @@ interface IParamsGenerateDeck {
     numJokers?: number;
 }
 
+interface IParamsCardValue {
+    hand?: TDeck;
+}
+
 // TODO: add optional Joker(s)
 
 export class PlayingCards {
@@ -45,11 +49,20 @@ export class PlayingCards {
     }
 
     // TODO: allow config for rules (e.g., facecard = 10, A = 1 or 11)
-    static getCardValue(card: ICard, params: Record<string, unknown>): number {
+    static getCardValue(card: ICard, params: IParamsCardValue): number {
         switch (card.value) {
             case 'A':
-                if(params?.cardsInHand && <number>params.cardsInHand <= 2) {
-                    return 11;
+                if (params?.hand) {
+                    if (params.hand.length > 2) {
+                        return 1;
+                    }
+
+                    // Find all the aces in the hand. Only the first one counts as 11.
+                    const aces = params.hand.filter(card => card.value === 'A');
+
+                    if (card === aces[0]) {
+                        return 11;
+                    }
                 }
                 return 1; // TODO: improve
 
@@ -110,9 +123,7 @@ export class PlayingCards {
     static totalHand(hand: TDeck): number {
         return hand.reduce(
             (total, card) => {
-                return total + this.getCardValue(card, {
-                    cardsInHand: hand.length
-                });
+                return total + this.getCardValue(card, { hand });
             },
             0
         );

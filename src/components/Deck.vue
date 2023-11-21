@@ -16,7 +16,7 @@ const emit = defineEmits<{
 const hasCard = props.cards?.length > 0;
 
 const emitCardClick = (event: Event) => {
-  if(props.cards.length > 0) {
+  if (props.cards.length > 0) {
     emit('click', event, <ICard>props.cards.shift());
   }
 }
