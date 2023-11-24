@@ -1,12 +1,21 @@
-import './assets/main.css'
-import './assets/vars.css'
+import './assets/main.css';
+import './assets/vars.css';
 
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import App from './App.vue'
+import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+import App from './App.vue';
 
-const app = createApp(App)
+// Vuetify
+import 'vuetify/styles';
+import { createVuetify } from 'vuetify';
 
-app.use(createPinia())
+const app = createApp(App);
 
-app.mount('#app')
+app.use(createPinia());
+app.use(createVuetify({
+    theme: {
+        defaultTheme: 'dark',
+    },
+}));
+
+app.mount('#app');

@@ -3,6 +3,7 @@ import {onBeforeMount, ref} from 'vue';
 import Card from '@/components/Card.vue';
 import CardHolder from '@/components/CardHolder.vue';
 import Deck from '@/components/Deck.vue';
+import RenameDialog from '@/components/RenameDialog.vue';
 import {PlayingCards} from '@/utilities/PlayingCards';
 import {Session} from '@/utilities/Session';
 import type {ICard, TDeck} from '@/utilities/PlayingCards';
@@ -76,12 +77,12 @@ const removePlayer = (player: Player) => {
   });
 };
 
-const setPlayerName = (player: Player) => {
-  const playerIndex = players.value.findIndex(p => p.uuid === player.uuid);
-  // TODO: add dialog
-
-  players.value[playerIndex].name = `New name ${nextPlayerNumber++}`;
-  Session.saveGameSession({'players': players.value});
+const setPlayerName = (player: Player, newName: string) => {
+  if (newName) {
+    const playerIndex = players.value.findIndex(p => p.uuid === player.uuid);
+    players.value[playerIndex].name = newName;
+    Session.saveGameSession({'players': players.value});
+  }
 };
 
 const moveCard = (event: Event, card: ICard) => {
@@ -138,7 +139,7 @@ const moveCard = (event: Event, card: ICard) => {
       >
         <template v-slot:label>
           {{ player.name }}
-          <button @click.stop="setPlayerName(player)">Rename</button>
+          <RenameDialog @update="(evt, name) => setPlayerName(player, name)"></RenameDialog>
           <button @click.stop="removePlayer(player)">Remove</button>
         </template>
         <Card

@@ -23,7 +23,7 @@ const showTotal = typeof props?.total !== 'undefined';
           <!-- expected <Card>(s) or <Deck> -->
         </slot>
       </div>
-      <div v-if="showTotal" class="area-total">{{ total }}</div>
+      <div v-if="showTotal" class="area-total"><span v-if="total! > 0">{{ total }}</span></div>
     </div>
   </div>
 </template>
