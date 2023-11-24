@@ -20,10 +20,14 @@ const showTotal = typeof props?.total !== 'undefined';
     <div class="card-row">
       <div class="card-area" :class="{'single-column': singleColumn}">
         <slot>
+          <!-- TODO: add variation in offset and rotation -->
           <!-- expected <Card>(s) or <Deck> -->
         </slot>
       </div>
-      <div v-if="showTotal" class="area-total"><span v-if="total! > 0">{{ total }}</span></div>
+      <div v-if="showTotal" class="area-total">
+        <span class="total-label">Total</span>
+        <span>{{ total }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -43,6 +47,16 @@ const showTotal = typeof props?.total !== 'undefined';
   align-items: center;
 
   color: var(--color-label);
+}
+.label {
+  flex: 1 0 0;
+
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 16pt;
 }
 .card-row {
   display: flex;
@@ -90,8 +104,16 @@ const showTotal = typeof props?.total !== 'undefined';
   }
 }
 .area-total {
+  display: flex;
+  flex-direction: column;
+
   font-family: "BioRhyme", "Droid Serif", serif;
   font-size: 36pt;
+  line-height: 1;
   min-width: 2em;
+  text-align: center;
+}
+.total-label {
+  font-size: 16pt;
 }
 </style>

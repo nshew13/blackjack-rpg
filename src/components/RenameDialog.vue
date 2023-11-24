@@ -41,9 +41,6 @@ const saveChanges = (event: Event) => {
 </template>
 
 <style scoped>
-.rename-btn {
-  margin: 0.5em 1em;
-}
 .rename-dialog {
   padding: 30px;
 }

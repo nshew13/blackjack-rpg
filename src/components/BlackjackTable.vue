@@ -107,7 +107,7 @@ const moveCard = (event: Event, card: ICard) => {
       <CardHolder label="Draw" class="draw-deck" single-column>
         <Deck :cards="drawDeck" @click.stop="moveCard"></Deck>
       </CardHolder>
-      <button @click.stop="() => addPlayer()">Add Player</button>
+      <v-btn class="remove-btn" text="Add Player" @click.stop="addPlayer"></v-btn>
       <CardHolder label="Discard" class="discard-pile" single-column></CardHolder>
     </section>
 
@@ -138,9 +138,9 @@ const moveCard = (event: Event, card: ICard) => {
           :total="PlayingCards.totalHand(availableCardHolders[`player-${player.uuid}`].value)"
       >
         <template v-slot:label>
-          {{ player.name }}
+          <div class="player-name">{{ player.name }}</div>
           <RenameDialog @update="(evt, name) => setPlayerName(player, name)"></RenameDialog>
-          <button @click.stop="removePlayer(player)">Remove</button>
+          <v-btn class="remove-btn" text="Remove" @click.stop="removePlayer(player)"></v-btn>
         </template>
         <Card
             v-for="card in availableCardHolders[`player-${player.uuid}`].value"
@@ -170,5 +170,11 @@ const moveCard = (event: Event, card: ICard) => {
   display: flex;
   align-items: center;
   justify-content: space-around;
+}
+.player-name {
+  flex: 1 0 0;
+}
+:deep(.v-btn) {
+  margin: 0.5em;
 }
 </style>
