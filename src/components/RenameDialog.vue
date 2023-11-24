@@ -3,17 +3,26 @@ import {ref} from 'vue';
 
 const inputName = ref<string>('');
 const showDialog = ref<boolean>(false);
-
-const hide = () => { showDialog.value = false };
-const show = () => { showDialog.value = true };
+let nameBackup = '';
 
 const emit = defineEmits<{
   (e: 'update', event: Event, name: string): void
 }>()
 
+
+const cancel = () => {
+  showDialog.value = false
+  inputName.value = nameBackup;
+};
+
+const show = () => {
+  nameBackup = inputName.value;
+  showDialog.value = true
+};
+
 const saveChanges = (event: Event) => {
   emit('update', event, inputName.value);
-  hide();
+  showDialog.value = false
 }
 </script>
 
@@ -27,12 +36,15 @@ const saveChanges = (event: Event) => {
             v-model="inputName"
             label="Player name"
             variant="outlined"
+            :autofocus="true"
+            @keyup.enter.stop="saveChanges"
+            @keyup.esc.stop="cancel"
         ></v-text-field>
 
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <v-btn text="Cancel" @click.stop="hide"></v-btn>
+          <v-btn text="Cancel" @click.stop="cancel"></v-btn>
           <v-btn text="Save" color="primary" @click.stop="saveChanges"></v-btn>
         </v-card-actions>
       </v-card>

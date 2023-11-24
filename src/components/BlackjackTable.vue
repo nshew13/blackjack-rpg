@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {onBeforeMount, ref} from 'vue';
+import {computed, onBeforeMount, ref} from 'vue';
 import Card from '@/components/Card.vue';
 import CardHolder from '@/components/CardHolder.vue';
 import Deck from '@/components/Deck.vue';
@@ -15,9 +15,9 @@ export interface Player {
   uuid: string;
 }
 
-// values loaded from Session store, if available
-let drawDeck: TDeck;
-const players: Ref<Player[]> = ref([]);
+const drawDeck = ref<TDeck>([]);
+const discardDeck = ref<TDeck>([]);
+const players = ref<Player[]>([]);
 let nextPlayerNumber = 1;
 
 type TCardHolderMapRef = Record<string, Ref<TDeck>>;
@@ -29,7 +29,7 @@ onBeforeMount(() => {
   // load from saved state
   const state: SessionStore = Session.loadGameSession();
 
-  drawDeck = state?.drawDeck ?? PlayingCards.shuffleDeck(PlayingCards.generateDeck());
+  drawDeck.value = state?.drawDeck ?? PlayingCards.shuffleDeck(PlayingCards.generateDeck());
   // availableCardHolders = state?.cardHolders ?? {'house': ref([])};
 
   if (Array.isArray(state?.players)) {
@@ -64,6 +64,53 @@ const addPlayer = (player?: Player, skipSave = false) => {
   }
 };
 
+const cardsDealt = computed((): boolean => {
+  // TODO: this doesn't work because availableCardHolders isn't reactive
+  // Object.keys(availableCardHolders).forEach(cardHolderID => {
+  //   if (availableCardHolders[cardHolderID].value.length > 0) {
+  //     return true;
+  //   }
+  // });
+
+  if (availableCardHolders.house.value.length > 0) {
+    return true;
+  }
+
+  players.value.forEach(player => {
+    if (availableCardHolders[`player-${player.uuid}`].value.length > 0) {
+      return true;
+    }
+  });
+
+  return false;
+});
+
+const discardAll = () => {
+  Object.keys(availableCardHolders).forEach(cardHolderID => discardHand(cardHolderID));
+};
+
+const discardHand = (cardHolderID: string) => {
+  discardDeck.value = discardDeck.value.concat(availableCardHolders[cardHolderID].value);
+  availableCardHolders[cardHolderID].value.length = 0;
+}
+
+const moveCard = (event: Event, card: ICard) => {
+  // TODO: add turn over animation
+  // TODO: add movement to card holder (hand)
+  card.facing = 'up';
+  const activeCH = activeCardHolder?.value;
+
+  if (typeof activeCH === 'string') {
+    if (Array.isArray(availableCardHolders[activeCH]?.value)) {
+      availableCardHolders[activeCH].value.push(card);
+    } else {
+      console.error('No active card holder defined for', activeCH);
+    }
+
+    Session.saveGameSession({'drawDeck': drawDeck.value});
+  }
+}
+
 const removePlayer = (player: Player) => {
   const cardHolderID = `player-${player.uuid}`;
   const playerIndex = players.value.findIndex(p => p.uuid === player.uuid);
@@ -77,6 +124,14 @@ const removePlayer = (player: Player) => {
   });
 };
 
+const reshuffleDrawDeck = () => {
+  drawDeck.value = PlayingCards.shuffleDeck(PlayingCards.generateDeck());
+  Session.saveGameSession({'drawDeck': drawDeck.value});
+  // TODO: empty discard
+  // TODO: leave cards on table
+  // TODO: reshuffle the same deck (number of cards, etc.)
+}
+
 const setPlayerName = (player: Player, newName: string) => {
   if (newName) {
     const playerIndex = players.value.findIndex(p => p.uuid === player.uuid);
@@ -84,31 +139,27 @@ const setPlayerName = (player: Player, newName: string) => {
     Session.saveGameSession({'players': players.value});
   }
 };
-
-const moveCard = (event: Event, card: ICard) => {
-  card.facing = 'up';
-  const activeCH = activeCardHolder?.value;
-
-  if (typeof activeCH === 'string') {
-    if (Array.isArray(availableCardHolders[activeCH]?.value)) {
-      availableCardHolders[activeCH].value.push(card);
-    } else {
-      console.error('No active card holder defined for', activeCH);
-    }
-
-    Session.saveGameSession({'drawDeck': drawDeck});
-  }
-}
 </script>
 
 <template>
   <div class="table">
     <section class="decks">
       <CardHolder label="Draw" class="draw-deck" single-column>
-        <Deck :cards="drawDeck" @click.stop="moveCard"></Deck>
+        <Deck :cards="drawDeck" @click.stop="moveCard" @reshuffle="reshuffleDrawDeck"></Deck>
+
+        <template v-slot:actions v-if="drawDeck.length <= 0">
+          <v-btn text="Shuffle" @click.stop="reshuffleDrawDeck"></v-btn>
+        </template>
       </CardHolder>
-      <v-btn class="remove-btn" text="Add Player" @click.stop="addPlayer"></v-btn>
-      <CardHolder label="Discard" class="discard-pile" single-column></CardHolder>
+
+      <div class="main-actions">
+        <v-btn text="Add Player" @click.stop="addPlayer"></v-btn>
+        <v-btn text="Discard All" @click.stop="discardAll" :disabled="!cardsDealt"></v-btn>
+      </div>
+
+      <CardHolder label="Discard" class="discard-pile" single-column>
+        <Deck :cards="discardDeck" facing="up"></Deck>
+      </CardHolder>
     </section>
 
     <CardHolder
@@ -122,6 +173,7 @@ const moveCard = (event: Event, card: ICard) => {
           v-for="card in availableCardHolders['house'].value"
           :key="PlayingCards.getCardID(card)"
           :card="card"
+          random-layout
       ></Card>
     </CardHolder>
 
@@ -137,15 +189,25 @@ const moveCard = (event: Event, card: ICard) => {
           class="player-dealt"
           :total="PlayingCards.totalHand(availableCardHolders[`player-${player.uuid}`].value)"
       >
-        <template v-slot:label>
+        <template v-slot:header>
           <div class="player-name">{{ player.name }}</div>
           <RenameDialog @update="(evt, name) => setPlayerName(player, name)"></RenameDialog>
-          <v-btn class="remove-btn" text="Remove" @click.stop="removePlayer(player)"></v-btn>
+          <v-btn
+              text="Remove"
+              @click.stop="removePlayer(player)"
+              :disabled="players.length <= 1"
+          ></v-btn>
+          <v-btn
+              text="Discard"
+              @click.stop="discardHand(`player-${player.uuid}`)"
+              :disabled="availableCardHolders[`player-${player.uuid}`].value.length === 0"
+          ></v-btn>
         </template>
         <Card
             v-for="card in availableCardHolders[`player-${player.uuid}`].value"
             :key="PlayingCards.getCardID(card)"
             :card="card"
+            random-layout
         ></Card>
       </CardHolder>
     </section>
@@ -171,8 +233,18 @@ const moveCard = (event: Event, card: ICard) => {
   align-items: center;
   justify-content: space-around;
 }
+.main-actions {
+  align-self: stretch;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
 .player-name {
-  flex: 1 0 0;
+  width: 200px;
+  margin-right: 2em;
+  overflow-x: clip;
+  text-overflow: ellipsis;
 }
 :deep(.v-btn) {
   margin: 0.5em;

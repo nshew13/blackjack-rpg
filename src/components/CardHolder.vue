@@ -14,8 +14,8 @@ const showTotal = typeof props?.total !== 'undefined';
 
 <template>
   <div class="card-holder" :class="{'active': isActive}">
-    <div class="label">
-      <slot name="label">{{ label }}</slot>
+    <div class="header">
+      <slot name="header">{{ label }}</slot>
     </div>
     <div class="card-row">
       <div class="card-area" :class="{'single-column': singleColumn}">
@@ -29,6 +29,7 @@ const showTotal = typeof props?.total !== 'undefined';
         <span>{{ total }}</span>
       </div>
     </div>
+    <slot v-if="$slots.actions" name="actions"></slot>
   </div>
 </template>
 
@@ -50,7 +51,7 @@ const showTotal = typeof props?.total !== 'undefined';
 
   color: var(--color-label);
 }
-.label {
+.header {
   flex: 1 0 0;
 
   display: flex;
@@ -98,6 +99,7 @@ const showTotal = typeof props?.total !== 'undefined';
   min-height: calc(var(--card-height) + var(--card-area-padding) * 2 + var(--area-border-width) * 2);
   border-radius: var(--card-corner-radius);
 
+  /* TODO?: move border to card-row to include total */
   border: var(--area-border-width) double var(--color-label);
 
   &.single-column {
@@ -115,7 +117,7 @@ const showTotal = typeof props?.total !== 'undefined';
   &:not(.single-column) :deep(.card:hover) {
     z-index: 64;
     /* TODO: adjust angle along arc */
-    transform: rotate(-5deg) translateY(-30px);
+    box-shadow: 0 0 25px 15px goldenrod;
   }
 }
 .area-total {

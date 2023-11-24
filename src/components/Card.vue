@@ -1,27 +1,44 @@
 <script setup lang="ts">
-import {ref} from 'vue';
+import {computed, ref} from 'vue';
 import {PlayingCards} from '@/utilities/PlayingCards';
 import SuitSymbol from '@/components/SuitSymbol.vue';
 import type {ICard} from '@/utilities/PlayingCards';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   card: ICard,
-}>();
+  randomLayout?: boolean
+}>(), {
+  randomLayout: false,
+});
 
 let isFaceUp = ref(props.card.facing === 'up');
-const color = PlayingCards.getColor(props.card.suit);
+
+const randomAngle = Math.floor((Math.random() - 0.5) * 10);
+const randomOffset = Math.floor((Math.random() - 0.5) * 10);
+
+const getStyle = computed(() => {
+  const styles: Record<string, string> = {
+    'color': PlayingCards.getColor(props.card.suit),  // TODO: this gives away color in markup
+  };
+  if (props.randomLayout) {
+    styles.transform = `translateY(${randomOffset}px) rotate(${randomAngle}deg)`;
+  }
+
+  return styles;
+});
+
 
 // const flipCard = () => {
 //   isFaceUp.value = !isFaceUp.value;
 // }
 // @click.stop="flipCard"
-
 </script>
 
 <template>
   <div
       class="card"
       :class="{'face-down': !isFaceUp}"
+      :style="getStyle"
   >
     <template v-if="isFaceUp">
       <div class="corner top-left">
@@ -49,8 +66,6 @@ const color = PlayingCards.getColor(props.card.suit);
   font-size: 2rem;
   line-height: 1;
 
-  /* TODO: this gives away color in markup */
-  color: v-bind(color);
   text-align: center;
   background-color: white;
   border-radius: var(--card-corner-radius);
