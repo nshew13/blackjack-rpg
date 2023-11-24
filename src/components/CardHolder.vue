@@ -35,6 +35,8 @@ const showTotal = typeof props?.total !== 'undefined';
 <style scoped>
 .card-holder {
   --color-label: goldenrod;
+  --area-border-width: 3px;
+  --card-holder-width: calc(350px + var(--card-width) + var(--area-border-width) * 2);
 
   &.active {
     --color-label: white;
@@ -64,7 +66,7 @@ const showTotal = typeof props?.total !== 'undefined';
   flex-wrap: nowrap;
 }
 .card-area {
-  --area-border-width: 3px;
+  --card-area-padding: 15px;
 
   /*
    * CSS Grid allows us to allow cards to overlap when there are
@@ -81,16 +83,29 @@ const showTotal = typeof props?.total !== 'undefined';
    */
   display: grid;
   grid-template-columns: repeat(8, 50px);
+  align-items: center;
+  row-gap: var(--card-area-padding);
 
-  min-height: calc(var(--card-box-height) + var(--area-border-width) * 2);
-  width: calc(350px + var(--card-box-width) + var(--area-border-width) * 2);
-  margin: var(--card-padding);
+  margin: 15px;
+  padding: var(--card-area-padding);
+
+  width: calc(
+      350px /* 350px = 50px * 7 overlapping cards */
+      + var(--card-width) /* final, whole card */
+      + var(--card-area-padding) * 2
+      + var(--area-border-width) * 2
+  );
+  min-height: calc(var(--card-height) + var(--card-area-padding) * 2 + var(--area-border-width) * 2);
   border-radius: var(--card-corner-radius);
 
   border: var(--area-border-width) double var(--color-label);
 
   &.single-column {
-    width: calc(var(--card-box-width) + var(--area-border-width) * 2);
+    width: calc(
+        var(--card-width)
+        + var(--card-area-padding) * 2
+        + var(--area-border-width) * 2
+    );
   }
 
   /* animate a peek of cards not in a single column */

@@ -36,12 +36,13 @@ const color = PlayingCards.getColor(props.card.suit);
 
 <style scoped>
 .card {
+  --card-padding: 10px;
+
   position: relative; /* for corner positioning */
 
-  aspect-ratio: 25 / 35;
+  box-sizing: border-box;
   height: var(--card-height);
-  width: auto;
-  margin: var(--card-margin);
+  width: var(--card-width);
   padding: var(--card-padding);
 
   font-family: "BioRhyme", "Droid Serif", serif;

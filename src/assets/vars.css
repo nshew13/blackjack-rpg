@@ -3,13 +3,6 @@
 :root {
   --card-aspect-ratio: 25 / 35;
   --card-height: 150px;
-  --card-width: calc(150px * var(--card-aspect-ratio));
+  --card-width: calc(var(--card-height) * var(--card-aspect-ratio));
   --card-corner-radius: 10px;
-
-  --card-padding: 10px;
-  --card-margin: 15px;
-
-  --card-box-spacing: calc(var(--card-padding) * 2 + var(--card-margin) * 2);
-  --card-box-height: calc(var(--card-height) + var(--card-box-spacing));
-  --card-box-width: calc(var(--card-width) + var(--card-box-spacing));
 }
