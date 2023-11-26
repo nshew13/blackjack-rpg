@@ -8,7 +8,7 @@ import {PlayingCards} from '@/utilities/PlayingCards';
 import {Session} from '@/utilities/Session';
 import type {ICard, TDeck} from '@/utilities/PlayingCards';
 import type {Ref} from 'vue';
-import type {SessionStore, TCardHolderMap} from '@/utilities/Session';
+import type {SessionStore} from '@/utilities/Session';
 
 export interface Player {
   name: string;
@@ -20,9 +20,12 @@ const discardDeck = ref<TDeck>([]);
 const players = ref<Player[]>([]);
 let nextPlayerNumber = 1;
 
-type TCardHolderMapRef = Record<string, Ref<TDeck>>;
-const availableCardHolders: TCardHolderMapRef = {'house': ref([])} as TCardHolderMapRef;
-const activeCardHolder: Ref<keyof TCardHolderMap> = ref('house');
+type TCardHolderMapRef = Record<string, TDeck>;
+/**
+ * a reactive map of player names (including "House") to TDecks
+ */
+const availableHands: Ref<TCardHolderMapRef> = ref({ 'house': [] } as TCardHolderMapRef);
+const activeCardHolder: Ref<string> = ref('house');
 
 
 onBeforeMount(() => {
@@ -30,7 +33,7 @@ onBeforeMount(() => {
   const state: SessionStore = Session.loadGameSession();
 
   drawDeck.value = state?.drawDeck ?? PlayingCards.shuffleDeck(PlayingCards.generateDeck());
-  // availableCardHolders = state?.cardHolders ?? {'house': ref([])};
+  // availableHands.value = state?.cardHolders ?? {'house': ref([])};
 
   if (Array.isArray(state?.players)) {
     // N.B.: Because forEach iterates over the original array, add+save doesn't get stuck in a loop here.
@@ -49,7 +52,7 @@ const addPlayer = (player?: Player, skipSave = false) => {
 
   const playerNumber = nextPlayerNumber++;
   const cardHolderID = `player-${uuid}`;
-  availableCardHolders[cardHolderID] = ref([]);
+  availableHands.value[cardHolderID] = [] as TDeck;
 
   players.value.push({
     name: player?.name ?? `Player ${playerNumber}`,
@@ -58,41 +61,33 @@ const addPlayer = (player?: Player, skipSave = false) => {
 
   if (!skipSave) {
     Session.saveGameSession({
-      // 'cardHolders': availableCardHolders,
+      // 'cardHolders': availableHands.value,
       'players': players.value,
     });
   }
 };
 
-const cardsDealt = computed((): boolean => {
-  // TODO: this doesn't work because availableCardHolders isn't reactive
-  // Object.keys(availableCardHolders).forEach(cardHolderID => {
-  //   if (availableCardHolders[cardHolderID].value.length > 0) {
-  //     return true;
-  //   }
-  // });
-
-  if (availableCardHolders.house.value.length > 0) {
-    return true;
-  }
-
-  players.value.forEach(player => {
-    if (availableCardHolders[`player-${player.uuid}`].value.length > 0) {
-      return true;
-    }
-  });
-
-  return false;
-});
-
 const discardAll = () => {
-  Object.keys(availableCardHolders).forEach(cardHolderID => discardHand(cardHolderID));
+  Object.keys(availableHands.value).forEach(cardHolderID => discardHand(cardHolderID));
 };
 
 const discardHand = (cardHolderID: string) => {
-  discardDeck.value = discardDeck.value.concat(availableCardHolders[cardHolderID].value);
-  availableCardHolders[cardHolderID].value.length = 0;
+  discardDeck.value = discardDeck.value.concat(availableHands.value[cardHolderID]);
+  availableHands.value[cardHolderID].length = 0;
 }
+
+const hasDealtCards = computed((): boolean => {
+  return Object.keys(availableHands.value).some(cardHolderID => {
+    return availableHands.value[cardHolderID].length > 0
+  });
+});
+
+const isEligibleForSplit = (cardHolderID: string) => {
+  return (
+      availableHands.value[cardHolderID].length === 2 &&
+      availableHands.value[cardHolderID][0] === availableHands.value[cardHolderID][1]
+  );
+};
 
 const moveCard = (event: Event, card: ICard) => {
   // TODO: add turn over animation
@@ -101,8 +96,8 @@ const moveCard = (event: Event, card: ICard) => {
   const activeCH = activeCardHolder?.value;
 
   if (typeof activeCH === 'string') {
-    if (Array.isArray(availableCardHolders[activeCH]?.value)) {
-      availableCardHolders[activeCH].value.push(card);
+    if (Array.isArray(availableHands.value[activeCH])) {
+      availableHands.value[activeCH].push(card);
     } else {
       console.error('No active card holder defined for', activeCH);
     }
@@ -116,10 +111,10 @@ const removePlayer = (player: Player) => {
   const playerIndex = players.value.findIndex(p => p.uuid === player.uuid);
 
   players.value.splice(playerIndex, 1);
-  delete availableCardHolders[cardHolderID];
+  delete availableHands.value[cardHolderID];
 
   Session.saveGameSession({
-    // 'cardHolders': availableCardHolders,
+    // 'cardHolders': availableHands.value,
     'players': players.value,
   });
 };
@@ -154,7 +149,7 @@ const setPlayerName = (player: Player, newName: string) => {
 
       <div class="main-actions">
         <v-btn text="Add Player" @click.stop="addPlayer"></v-btn>
-        <v-btn text="Discard All" @click.stop="discardAll" :disabled="!cardsDealt"></v-btn>
+        <v-btn text="Discard All" @click.stop="discardAll" :disabled="!hasDealtCards"></v-btn>
       </div>
 
       <CardHolder label="Discard" class="discard-pile" single-column>
@@ -167,10 +162,10 @@ const setPlayerName = (player: Player, newName: string) => {
         :is-active="activeCardHolder === 'house'"
         @click.stop="activeCardHolder = 'house'"
         class="house-dealt"
-        :total="PlayingCards.totalHand(availableCardHolders['house'].value)"
+        :total="PlayingCards.totalHand(availableHands['house'])"
     >
       <Card
-          v-for="card in availableCardHolders['house'].value"
+          v-for="card in availableHands['house']"
           :key="PlayingCards.getCardID(card)"
           :card="card"
           random-layout
@@ -187,7 +182,7 @@ const setPlayerName = (player: Player, newName: string) => {
           :is-active="activeCardHolder === `player-${player.uuid}`"
           @click.stop="activeCardHolder = `player-${player.uuid}`"
           class="player-dealt"
-          :total="PlayingCards.totalHand(availableCardHolders[`player-${player.uuid}`].value)"
+          :total="PlayingCards.totalHand(availableHands[`player-${player.uuid}`])"
       >
         <template v-slot:header>
           <div class="player-name">{{ player.name }}</div>
@@ -200,11 +195,11 @@ const setPlayerName = (player: Player, newName: string) => {
           <v-btn
               text="Discard"
               @click.stop="discardHand(`player-${player.uuid}`)"
-              :disabled="availableCardHolders[`player-${player.uuid}`].value.length === 0"
+              :disabled="availableHands[`player-${player.uuid}`].length === 0"
           ></v-btn>
         </template>
         <Card
-            v-for="card in availableCardHolders[`player-${player.uuid}`].value"
+            v-for="card in availableHands[`player-${player.uuid}`]"
             :key="PlayingCards.getCardID(card)"
             :card="card"
             random-layout

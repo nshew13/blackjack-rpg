@@ -2,10 +2,7 @@ import type {TDeck} from '@/utilities/PlayingCards';
 import type {Player} from '@/components/BlackjackTable.vue';
 
 
-export type TCardHolderMap = Record<string, TDeck>;
-
 export interface SessionStore {
-    // cardHolders?: TCardHolderMap;
     drawDeck?: TDeck;
     players?: Player[];
 }

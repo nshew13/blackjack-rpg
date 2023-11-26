@@ -121,6 +121,9 @@ export class PlayingCards {
     }
 
     static totalHand(hand: TDeck): number {
+        if (!Array.isArray(hand)) {
+            throw new Error('totalHand received unexpected value');
+        }
         return hand.reduce(
             (total, card) => {
                 return total + this.getCardValue(card, { hand });
