@@ -26,7 +26,8 @@ const showTotal = typeof props?.total !== 'undefined';
       </div>
       <div v-if="showTotal" class="area-total">
         <span class="total-label">Total</span>
-        <span>{{ total }}</span>
+        <span>{{ total < 0 ? '--' : total }}</span>
+        <slot name="actions"></slot>
       </div>
     </div>
     <slot v-if="$slots.actions" name="actions"></slot>

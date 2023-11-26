@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import {computed} from 'vue';
 import Card from '@/components/Card.vue';
-import type {ICard, TDeck} from '@/utilities/PlayingCards';
+import type {ICard, TCardFacing, TDeck} from '@/utilities/PlayingCards';
 
 const props = withDefaults(defineProps<{
   // N.B.: a watch on cards will stop if/when the array is replaced with a new array (e.g., during reshuffle)
   cards: TDeck,
-  facing?: 'up' | 'down',
+  facing?: TCardFacing,
 }>(), {
   facing: 'down',
 })

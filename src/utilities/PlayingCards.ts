@@ -1,4 +1,3 @@
-
 const Values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'] as const;
 const Suits = ['clubs', 'diamonds', 'hearts', 'spades'] as const;
 
@@ -91,6 +90,31 @@ export class PlayingCards {
             case 'spades':
                 return '&spades;';
         }
+    }
+
+    /**
+     * removes and returns "top" card from deck
+     *
+     * If the deck is face down, the "top" card is at the first index;
+     * if face up, the last.
+     *
+     * @param deck
+     * @param facing
+     */
+    static getTopCard(deck: TDeck, facing: TCardFacing = 'down'): ICard | false {
+        if (deck.length > 0) {
+            if (facing === 'up') {
+                return deck.pop() as ICard;
+            }
+
+            return deck.shift() as ICard;
+        }
+
+        return false;
+    }
+
+    static hasBlackjack(hand: TDeck): boolean {
+        return hand.length === 2 && PlayingCards.totalHand(hand) === 21;
     }
 
     /**

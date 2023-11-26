@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, ref} from 'vue';
+import {computed} from 'vue';
 import {PlayingCards} from '@/utilities/PlayingCards';
 import SuitSymbol from '@/components/SuitSymbol.vue';
 import type {ICard} from '@/utilities/PlayingCards';
@@ -11,7 +11,12 @@ const props = withDefaults(defineProps<{
   randomLayout: false,
 });
 
-let isFaceUp = ref(props.card.facing === 'up');
+const emit = defineEmits<{
+  (e: 'card-reveal'): void
+}>()
+
+
+let isFaceUp = computed(() => props.card.facing === 'up');
 
 const randomAngle = Math.floor((Math.random() - 0.5) * 10);
 const randomOffset = Math.floor((Math.random() - 0.5) * 10);
@@ -27,11 +32,10 @@ const getStyle = computed(() => {
   return styles;
 });
 
-
-// const flipCard = () => {
-//   isFaceUp.value = !isFaceUp.value;
-// }
-// @click.stop="flipCard"
+const flipCardUp = () => {
+  props.card.facing = 'up';
+  emit('card-reveal');
+}
 </script>
 
 <template>
@@ -39,6 +43,7 @@ const getStyle = computed(() => {
       class="card"
       :class="{'face-down': !isFaceUp}"
       :style="getStyle"
+      @click.stop="flipCardUp"
   >
     <template v-if="isFaceUp">
       <div class="corner top-left">
