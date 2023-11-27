@@ -46,11 +46,12 @@ const showTotal = typeof props?.total !== 'undefined';
 <style scoped>
 .card-holder {
   --color-label: goldenrod;
+  --color-border: var(--color-label);
   --area-border-width: 3px;
   --card-holder-width: calc(350px + var(--card-width) + var(--area-border-width) * 2);
 
   &.win {
-    --color-label: blue;
+    --color-border: blue;
   }
 
   /* center label and area along vertical axis */
@@ -113,7 +114,7 @@ const showTotal = typeof props?.total !== 'undefined';
   border-radius: var(--card-corner-radius);
 
   /* TODO?: move border to card-row to include total */
-  border: var(--area-border-width) double var(--color-label);
+  border: var(--area-border-width) double var(--color-border);
 
   &.single-column {
     width: calc(

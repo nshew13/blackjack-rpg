@@ -24,7 +24,7 @@ const cancel = () => {
   emit('close');
 };
 
-const ok = (event: Event) => {
+const ok = () => {
   emit('ok');
   showDialog.value = false;
   emit('close');

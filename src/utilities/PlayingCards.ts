@@ -7,6 +7,7 @@ export type TCardFacing = 'down' | 'up';
 export type TCardColor = 'black' | 'red';
 export interface ICard {
     facing: TCardFacing;
+    id: string;
     suit: TCardSuit;
     value: TCardValue;
 }
@@ -36,7 +37,12 @@ export class PlayingCards {
         const deck: TDeck = [];
         Suits.forEach(suit => {
             Values.forEach(value => {
-                deck.push({ facing, suit, value });
+                deck.push({
+                    facing,
+                    id: `${suit}-${value}`,
+                    suit,
+                    value,
+                });
             })
         });
 
