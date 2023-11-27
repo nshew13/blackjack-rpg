@@ -81,6 +81,12 @@ watch(allPlayersAreBust, () => {
   }
 });
 
+watch(stayedPlayerIDs, () => {
+  if (stayedPlayerIDs.value.length === playerHands.value.length) {
+    revealHouseHand();
+  }
+}, { deep: true });
+
 onBeforeMount(() => {
   // load from saved state
   const state: SessionStore = Session.loadGameSession();
@@ -128,6 +134,7 @@ const dealInitialHands = () => {
   }
 
   hasHouseRevealed.value = false;
+  houseWins.value = false;
 
   // deal one to each player
   players.value.forEach(player => { dealToPlayer(player); });
