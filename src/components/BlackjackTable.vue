@@ -297,7 +297,7 @@ const stayPlayer = (player: IPlayer) => {
 
     <section class="house">
       <CardHolder
-          @click.stop="dealToHouse"
+          @deal="dealToHouse"
           :bust="handIsBust(houseHand)"
           :total="hasHouseRevealed ? PlayingCards.totalHand(houseHand) : -1"
           :win="houseHasBlackjack || houseWins"
@@ -327,7 +327,7 @@ const stayPlayer = (player: IPlayer) => {
       <CardHolder
           v-for="player in players"
           :key="player.uuid"
-          @click.stop="dealToPlayer(player)"
+          @deal="dealToPlayer(player)"
           :bust="handIsBust(playerHandsMap[player.uuid])"
           :total="PlayingCards.totalHand(playerHandsMap[player.uuid])"
           :win="handWins(playerHandsMap[player.uuid]) || houseIsBust"

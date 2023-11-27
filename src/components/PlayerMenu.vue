@@ -45,9 +45,3 @@ const rename = (player: IPlayer, newName: string) => {
     </v-list>
   </v-menu>
 </template>
-
-<style scoped>
-.confirmation-dialog {
-  padding: 30px;
-}
-</style>

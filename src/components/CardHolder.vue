@@ -12,6 +12,10 @@ const props = withDefaults(defineProps<{
   win: false,
 });
 
+const emit = defineEmits<{
+  (e: 'deal'): void,
+}>();
+
 const showTotal = typeof props?.total !== 'undefined';
 </script>
 
@@ -23,7 +27,7 @@ const showTotal = typeof props?.total !== 'undefined';
       </div>
 
       <div class="card-row">
-        <div class="card-area" :class="{'single-column': singleColumn}">
+        <div class="card-area" :class="{'single-column': singleColumn}" @click.stop="emit('deal')">
           <slot>
             <!-- TODO: add variation in offset and rotation -->
             <!-- expected <Card>(s) or <Deck> -->
@@ -114,6 +118,7 @@ const showTotal = typeof props?.total !== 'undefined';
 
   margin: 15px;
   padding: var(--card-area-padding);
+  cursor: pointer;
 
   width: calc(
       350px /* 350px = 50px * 7 overlapping cards */
