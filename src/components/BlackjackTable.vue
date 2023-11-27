@@ -20,6 +20,7 @@ type TCardHolderMapRef = Record<string /* IPlayer.uuid */, TDeck>;
 
 
 const HOUSE_STAYS = 17;
+let nextPlayerNumber = 1;
 
 //
 //
@@ -29,11 +30,11 @@ const HOUSE_STAYS = 17;
 const drawDeck = ref<TDeck>([]);
 const discardDeck = ref<TDeck>([]);
 const players = ref<IPlayer[]>([]);
-let nextPlayerNumber = 1;
 
 const hasHouseRevealed = ref<boolean>(false);
 const houseWins = ref<boolean>(false);
 const showConfirmHouse = ref<boolean>(false);
+const stayedPlayerIDs = ref<string[]>([]);
 
 /**
  * a reactive map of player UUIDs to TDecks
@@ -121,17 +122,13 @@ const dealInitialHands = () => {
   hasHouseRevealed.value = false;
 
   // deal one to each player
-  playerHands.value.forEach(hand => {
-    dealToPlayer(hand);
-  });
+  players.value.forEach(player => { dealToPlayer(player); });
 
   // deal House's first card face down
   dealToHouse(true, 'down');
 
   // deal second card to each player
-  playerHands.value.forEach(hand => {
-    dealToPlayer(hand);
-  });
+  players.value.forEach(player => { dealToPlayer(player); });
 
   // deal House's second card face up
   dealToHouse(true);
@@ -175,13 +172,19 @@ const dealToHouse = (skipWarning = false, facing: TCardFacing = 'up') => {
 
 // TODO: add turn over animation
 // TODO: add movement to card holder (hand)
-const dealToPlayer = (hand: TDeck) => {
+const dealToPlayer = (player: IPlayer) => {
+  if (stayedPlayerIDs.value.includes(player.uuid)) {
+    return;
+  }
+
+  const hand = playerHandsMap.value[player.uuid];
   dealTo(hand);
 }
 
 const discardAll = () => {
   discardHand(houseHand.value);
   playerHands.value.forEach(hand => discardHand(hand));
+  stayedPlayerIDs.value.length = 0;
 };
 
 const discardHand = (hand: TDeck) => {
@@ -211,7 +214,7 @@ const handWins = (hand: TDeck): boolean => {
   return false;
 };
 
-const isEligibleForSplit = (hand: TDeck) => hand.length === 2 && hand[0] === hand[1];
+const isEligibleForSplit = (hand: TDeck): boolean => hand.length === 2 && hand[0] === hand[1];
 
 const removePlayer = (player: IPlayer) => {
   const playerIndex = players.value.findIndex(p => p.uuid === player.uuid);
@@ -250,6 +253,10 @@ const setPlayerName = (player: IPlayer, newName: string) => {
 const splitHand = (player: IPlayer) => {
   console.log(`TODO: split hand for ${player.name}`);
 };
+
+const stayPlayer = (player: IPlayer) => {
+  stayedPlayerIDs.value.push(player.uuid);
+};
 </script>
 
 <template>
@@ -284,7 +291,6 @@ const splitHand = (player: IPlayer) => {
     <section class="house">
       <CardHolder
           @click.stop="dealToHouse"
-          class="house-dealt"
           :bust="handIsBust(houseHand)"
           :total="hasHouseRevealed ? PlayingCards.totalHand(houseHand) : -1"
           :win="houseWins"
@@ -314,20 +320,20 @@ const splitHand = (player: IPlayer) => {
       <CardHolder
           v-for="player in players"
           :key="player.uuid"
-          @click.stop="dealToPlayer(playerHandsMap[player.uuid])"
-          class="player-dealt"
+          @click.stop="dealToPlayer(player)"
           :bust="handIsBust(playerHandsMap[player.uuid])"
           :total="PlayingCards.totalHand(playerHandsMap[player.uuid])"
           :win="handWins(playerHandsMap[player.uuid])"
       >
         <template v-slot:header>
-          <div class="player-name">{{ player.name }}</div>
+          <!-- TODO: move player controls to ellipsis menu -->
           <RenameDialog @update="(evt, name) => setPlayerName(player, name)"></RenameDialog>
           <v-btn
               text="Remove"
               @click.stop="removePlayer(player)"
               :disabled="players.length <= 1"
           ></v-btn>
+          <div class="player-name">{{ player.name }}</div>
         </template>
         <Card
             v-for="card in playerHandsMap[player.uuid]"
@@ -335,7 +341,11 @@ const splitHand = (player: IPlayer) => {
             :card="card"
             random-layout
         ></Card>
-        <template v-slot:actions>
+        <template v-slot:side>
+          <div class="stay">
+            <v-btn v-if="!stayedPlayerIDs.includes(player.uuid)" text="Stay" @click.stop="stayPlayer(player)"></v-btn>
+            <v-icon v-else class="stay-icon" icon="mdi-hand-front-right" size="small" color="red"></v-icon>
+          </div>
           <v-btn
               v-if="isEligibleForSplit(playerHandsMap[player.uuid])"
               text="Split"
@@ -374,13 +384,11 @@ const splitHand = (player: IPlayer) => {
   justify-content: space-evenly;
 }
 .player-name {
-  width: 200px;
-  margin-right: 2em;
+  flex: 1 0 0;
   overflow-x: clip;
   text-overflow: ellipsis;
 }
-:deep(.v-btn) {
-  margin: 0.5em;
-  white-space: unset;
+.stay > * {
+  display: inline;
 }
 </style>

@@ -16,34 +16,43 @@ const showTotal = typeof props?.total !== 'undefined';
 </script>
 
 <template>
-  <div class="card-holder" :class="{ 'win': win }">
-    <div class="header">
-      <slot name="header">{{ label }}</slot>
-    </div>
-
-    <div class="card-row">
-      <div class="card-area" :class="{'single-column': singleColumn}">
-        <slot>
-          <!-- TODO: add variation in offset and rotation -->
-          <!-- expected <Card>(s) or <Deck> -->
-        </slot>
-        <svg v-if="bust" class="bust" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
-          <path d="M0 0 L100 100" />
-          <path d="M0 100 L100 0" />
-        </svg>
+  <div class="card-holder-container">
+    <div class="card-holder" :class="{ 'win': win }">
+      <div class="header">
+        <slot name="header">{{ label }}</slot>
       </div>
-      <div v-if="showTotal" class="area-total">
-        <span class="total-label">Total</span>
-        <span>{{ total < 0 ? '--' : total }}</span>
-        <slot name="actions"></slot>
-      </div>
-    </div>
 
-    <slot v-if="$slots.actions" name="actions"></slot>
+      <div class="card-row">
+        <div class="card-area" :class="{'single-column': singleColumn}">
+          <slot>
+            <!-- TODO: add variation in offset and rotation -->
+            <!-- expected <Card>(s) or <Deck> -->
+          </slot>
+          <svg v-if="bust" class="bust" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+            <path d="M0 0 L100 100" />
+            <path d="M0 100 L100 0" />
+          </svg>
+        </div>
+        <div v-if="showTotal" class="area-total">
+          <span class="total-label">Total</span>
+          <span>{{ total < 0 ? '--' : total }}</span>
+          <slot name="side"></slot>
+        </div>
+      </div>
+
+      <slot v-if="$slots.actions" name="actions"></slot>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.card-holder-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  margin-bottom: 1em;
+}
 .card-holder {
   --color-label: goldenrod;
   --color-border: var(--color-label);
@@ -60,16 +69,18 @@ const showTotal = typeof props?.total !== 'undefined';
   flex-wrap: nowrap;
   align-items: center;
 
+  width: min-content;
+
   color: var(--color-label);
   user-select: none;
 }
 .header {
-  flex: 1 0 0;
+  align-self: stretch;
 
   display: flex;
   flex-wrap: nowrap;
-  justify-content: center;
   align-items: center;
+  column-gap: 0.5em;
 
   font-size: 16pt;
 }
