@@ -33,8 +33,10 @@ const getStyle = computed(() => {
 });
 
 const flipCardUp = () => {
+  if (props.card.facing === 'down') {
+    emit('card-reveal');
+  }
   props.card.facing = 'up';
-  emit('card-reveal');
 }
 </script>
 
@@ -43,7 +45,7 @@ const flipCardUp = () => {
       class="card"
       :class="{'face-down': !isFaceUp}"
       :style="getStyle"
-      @click.stop="flipCardUp"
+      @click="flipCardUp"
   >
     <template v-if="isFaceUp">
       <div class="corner top-left">

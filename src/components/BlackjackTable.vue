@@ -2,11 +2,12 @@
 import {computed, onBeforeMount, ref} from 'vue';
 import Card from '@/components/Card.vue';
 import CardHolder from '@/components/CardHolder.vue';
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import Deck from '@/components/Deck.vue';
 import RenameDialog from '@/components/RenameDialog.vue';
 import {PlayingCards} from '@/utilities/PlayingCards';
 import {Session} from '@/utilities/Session';
-import type {ICard, TDeck} from '@/utilities/PlayingCards';
+import type {TCardFacing, TDeck} from '@/utilities/PlayingCards';
 import type {Ref} from 'vue';
 import type {SessionStore} from '@/utilities/Session';
 
@@ -15,21 +16,24 @@ export interface Player {
   uuid: string;
 }
 
-const HAND_PLAYER_PREFIX = 'player-';
-const HAND_HOUSE = 'house';
+const HAND_ID_HOUSE = 'house';
+const HAND_ID_PLAYER_PREFIX = 'player-';
+const HOUSE_STAYS = 17;
 
 const drawDeck = ref<TDeck>([]);
 const discardDeck = ref<TDeck>([]);
 const players = ref<Player[]>([]);
-const houseRevealed = ref<boolean>(false);
 let nextPlayerNumber = 1;
+
+const hasHouseRevealed = ref<boolean>(false);
+const showConfirmHouse = ref<boolean>(false);
 
 type TCardHolderMapRef = Record<string, TDeck>;
 /**
  * a reactive map of player names (including "House") to TDecks
  */
-const availableHands: Ref<TCardHolderMapRef> = ref({ [HAND_HOUSE]: [] } as TCardHolderMapRef);
-const activeCardHolder: Ref<string> = ref(HAND_HOUSE);
+// TODO: split out House
+const availableHands: Ref<TCardHolderMapRef> = ref({ [HAND_ID_HOUSE]: [] } as TCardHolderMapRef);
 
 
 onBeforeMount(() => {
@@ -37,7 +41,7 @@ onBeforeMount(() => {
   const state: SessionStore = Session.loadGameSession();
 
   drawDeck.value = state?.drawDeck ?? PlayingCards.shuffleDeck(PlayingCards.generateDeck());
-  // availableHands.value = state?.cardHolders ?? {[HAND_HOUSE]: ref([])};
+  // availableHands.value = state?.cardHolders ?? {[HAND_ID_HOUSE]: ref([])};
 
   if (Array.isArray(state?.players)) {
     // N.B.: Because forEach iterates over the original array, add+save doesn't get stuck in a loop here.
@@ -55,8 +59,8 @@ const addPlayer = (player?: Player, skipSave = false) => {
   }
 
   const playerNumber = nextPlayerNumber++;
-  const cardHolderID = `${HAND_PLAYER_PREFIX}${uuid}`;
-  availableHands.value[cardHolderID] = [] as TDeck;
+  const handID = `${HAND_ID_PLAYER_PREFIX}${uuid}`;
+  availableHands.value[handID] = [] as TDeck;
 
   players.value.push({
     name: player?.name ?? `Player ${playerNumber}`,
@@ -72,103 +76,112 @@ const addPlayer = (player?: Player, skipSave = false) => {
 };
 
 const dealInitialHands = () => {
-  houseRevealed.value = false;
+  const playerHands = Object.keys(availableHands.value).filter(handID => handID.startsWith(HAND_ID_PLAYER_PREFIX));
+  hasHouseRevealed.value = false;
 
   // deal one to each player
-  Object.keys(availableHands.value).forEach(cardHolderID => {
-    if (cardHolderID.startsWith(HAND_PLAYER_PREFIX)) {
-      const nextCard = PlayingCards.getTopCard(drawDeck.value);
-      if (nextCard) {
-        availableHands.value[cardHolderID].push(nextCard);
-        nextCard.facing = 'up';
-      } else {
-        // TODO: reshuffle and continue
-      }
-    }
+  playerHands.forEach(handID => {
+    dealTo(handID);
   });
 
-  const dealerHiddenCard = PlayingCards.getTopCard(drawDeck.value);
-  if (!dealerHiddenCard) {
-    // TODO: reshuffle and continue
-    return;
-  }
-  availableHands.value[HAND_HOUSE].push(dealerHiddenCard);
+  // deal House's first card face down
+  dealTo(HAND_ID_HOUSE, 'down');
 
   // deal second card to each player
-  Object.keys(availableHands.value).forEach(cardHolderID => {
-    if (cardHolderID.startsWith(HAND_PLAYER_PREFIX)) {
-      const nextCard = PlayingCards.getTopCard(drawDeck.value);
-      if (nextCard) {
-        availableHands.value[cardHolderID].push(nextCard);
-        nextCard.facing = 'up';
-      } else {
-        // TODO: reshuffle and continue
-      }
-    }
+  playerHands.forEach(handID => {
+    dealTo(handID);
   });
 
-  const dealerUpCard = PlayingCards.getTopCard(drawDeck.value);
-  if (!dealerUpCard) {
-    // TODO: reshuffle and continue
-    return;
-  }
-  availableHands.value[HAND_HOUSE].push(dealerUpCard);
-  dealerUpCard.facing = 'up';
+  // deal House's second card face up
+  dealTo(HAND_ID_HOUSE);
 
   // reveal if dealer has blackjack
-  if (PlayingCards.hasBlackjack(availableHands.value[HAND_HOUSE])) {
-    dealerHiddenCard.facing = 'up';
-    houseRevealed.value = true;
+  if (PlayingCards.hasBlackjack(availableHands.value[HAND_ID_HOUSE])) {
+    availableHands.value[HAND_ID_HOUSE][0].facing = 'up';
+    hasHouseRevealed.value = true;
   }
 
   Session.saveGameSession({'drawDeck': drawDeck.value});
 };
 
-const discardAll = () => {
-  Object.keys(availableHands.value).forEach(cardHolderID => discardHand(cardHolderID));
-};
-
-const discardHand = (cardHolderID: string) => {
-  discardDeck.value = discardDeck.value.concat(availableHands.value[cardHolderID]);
-  availableHands.value[cardHolderID].length = 0;
-}
-
-const hasDealtCards = computed((): boolean => {
-  return Object.keys(availableHands.value).some(cardHolderID => {
-    return availableHands.value[cardHolderID].length > 0
-  });
-});
-
-const isEligibleForSplit = (cardHolderID: string) => {
-  return (
-      availableHands.value[cardHolderID].length === 2 &&
-      availableHands.value[cardHolderID][0] === availableHands.value[cardHolderID][1]
-  );
-};
-
-const moveCard = (event: Event, card: ICard) => {
-  // TODO: add turn over animation
-  // TODO: add movement to card holder (hand)
-  card.facing = 'up';
-  const activeCH = activeCardHolder?.value;
-
-  if (typeof activeCH === 'string') {
-    if (Array.isArray(availableHands.value[activeCH])) {
-      availableHands.value[activeCH].push(card);
-    } else {
-      console.error('No active card holder defined for', activeCH);
-    }
-
-    Session.saveGameSession({'drawDeck': drawDeck.value});
+const dealToHouse = () => {
+  if (!hasHouseRevealed.value) {
+    // warn before revealing
+    // TODO: make this optional/configurable
+    showConfirmHouse.value = true;
+  } else {
+    dealTo(HAND_ID_HOUSE);
   }
 }
 
+// TODO: add turn over animation
+// TODO: add movement to card holder (hand)
+const dealTo = (handID: string, facing: TCardFacing = 'up') => {
+  if (handIsBust(handID)) {
+    console.log('Hand is bust. I cannot even deal.');
+    return;
+  }
+
+  const nextCard = PlayingCards.getTopCard(drawDeck.value);
+
+  if (nextCard) {
+    availableHands.value[handID].push(nextCard);
+    nextCard.facing = facing;
+  } else {
+    // TODO: reshuffle and continue
+  }
+
+  Session.saveGameSession({'drawDeck': drawDeck.value});
+}
+
+const discardAll = () => {
+  Object.keys(availableHands.value).forEach(handID => discardHand(handID));
+};
+
+const discardHand = (handID: string) => {
+  discardDeck.value = discardDeck.value.concat(availableHands.value[handID]);
+  availableHands.value[handID].length = 0;
+}
+
+const completeHouseHand = () => {
+  if (!hasHouseRevealed.value) {
+    revealHouseHand();
+    while (houseTotal.value < HOUSE_STAYS) {
+      dealToHouse();
+    }
+  }
+}
+
+const handIsBust = (handID: string): boolean => PlayingCards.totalHand(availableHands.value[handID]) > 21;
+
+const handWins = (handID: string): boolean => {
+  const handTotal = PlayingCards.totalHand(availableHands.value[handID]);
+
+  return PlayingCards.hasBlackjack(availableHands.value[handID]) ||
+    (handTotal <= 21 && handTotal > houseTotal.value);
+};
+
+const hasDealtCards = computed((): boolean => {
+  return Object.keys(availableHands.value).some(handID => {
+    return availableHands.value[handID].length > 0
+  });
+});
+
+const houseTotal = computed((): number => PlayingCards.totalHand(availableHands.value[HAND_ID_HOUSE]));
+
+const isEligibleForSplit = (handID: string) => {
+  return (
+      availableHands.value[handID].length === 2 &&
+      availableHands.value[handID][0] === availableHands.value[handID][1]
+  );
+};
+
 const removePlayer = (player: Player) => {
-  const cardHolderID = `${HAND_PLAYER_PREFIX}${player.uuid}`;
+  const handID = `${HAND_ID_PLAYER_PREFIX}${player.uuid}`;
   const playerIndex = players.value.findIndex(p => p.uuid === player.uuid);
 
   players.value.splice(playerIndex, 1);
-  delete availableHands.value[cardHolderID];
+  delete availableHands.value[handID];
 
   Session.saveGameSession({
     // 'cardHolders': availableHands.value,
@@ -182,6 +195,11 @@ const reshuffleDrawDeck = () => {
   // TODO: empty discard
   // TODO: leave cards on table
   // TODO: reshuffle the same deck (number of cards, etc.)
+}
+
+const revealHouseHand = () => {
+  availableHands.value[HAND_ID_HOUSE].forEach(card => { card.facing = 'up'; });
+  hasHouseRevealed.value = true;
 }
 
 const setPlayerName = (player: Player, newName: string) => {
@@ -199,9 +217,16 @@ const splitHand = (player: Player) => {
 
 <template>
   <div class="table">
+    <ConfirmationDialog
+        :show-dialog="showConfirmHouse"
+        message="Do you want to reveal the House's hand?"
+        @ok="revealHouseHand"
+        @close="showConfirmHouse = false"
+    ></ConfirmationDialog>
+
     <section class="decks">
       <CardHolder label="Draw" class="draw-deck" single-column>
-        <Deck :cards="drawDeck" @click.stop="moveCard" @reshuffle="reshuffleDrawDeck"></Deck>
+        <Deck :cards="drawDeck" @reshuffle="reshuffleDrawDeck"></Deck>
 
         <template v-slot:actions v-if="drawDeck.length <= 0">
           <v-btn text="Shuffle" @click.stop="reshuffleDrawDeck"></v-btn>
@@ -220,18 +245,26 @@ const splitHand = (player: Player) => {
     </section>
 
     <CardHolder
-        label="House"
-        :is-active="activeCardHolder === HAND_HOUSE"
-        @click.stop="activeCardHolder = HAND_HOUSE"
+        @click.stop="dealToHouse"
         class="house-dealt"
-        :total="houseRevealed ? PlayingCards.totalHand(availableHands[HAND_HOUSE]) : -1"
+        :bust="handIsBust(HAND_ID_HOUSE)"
+        :total="hasHouseRevealed ? PlayingCards.totalHand(availableHands[HAND_ID_HOUSE]) : -1"
+        :win="handIsBust(HAND_ID_HOUSE)"
     >
+      <template v-slot:header>
+        <div class="player-name">House</div>
+        <v-btn
+            text="Finish Hand"
+            :disabled="!(hasDealtCards && !hasHouseRevealed)"
+            @click.stop="completeHouseHand"
+        ></v-btn>
+      </template>
       <Card
-          v-for="card in availableHands[HAND_HOUSE]"
+          v-for="card in availableHands[HAND_ID_HOUSE]"
           :key="PlayingCards.getCardID(card)"
           :card="card"
           random-layout
-          @card-reveal="houseRevealed = true"
+          @card-reveal="hasHouseRevealed = true"
       ></Card>
     </CardHolder>
 
@@ -242,10 +275,11 @@ const splitHand = (player: Player) => {
       <CardHolder
           v-for="player in players"
           :key="player.uuid"
-          :is-active="activeCardHolder === `${HAND_PLAYER_PREFIX}${player.uuid}`"
-          @click.stop="activeCardHolder = `${HAND_PLAYER_PREFIX}${player.uuid}`"
+          @click.stop="dealTo(`${HAND_ID_PLAYER_PREFIX}${player.uuid}`)"
           class="player-dealt"
-          :total="PlayingCards.totalHand(availableHands[`${HAND_PLAYER_PREFIX}${player.uuid}`])"
+          :bust="handIsBust(`${HAND_ID_PLAYER_PREFIX}${player.uuid}`)"
+          :total="PlayingCards.totalHand(availableHands[`${HAND_ID_PLAYER_PREFIX}${player.uuid}`])"
+          :win="handWins(`${HAND_ID_PLAYER_PREFIX}${player.uuid}`)"
       >
         <template v-slot:header>
           <div class="player-name">{{ player.name }}</div>
@@ -255,21 +289,16 @@ const splitHand = (player: Player) => {
               @click.stop="removePlayer(player)"
               :disabled="players.length <= 1"
           ></v-btn>
-          <v-btn
-              text="Discard"
-              @click.stop="discardHand(`${HAND_PLAYER_PREFIX}${player.uuid}`)"
-              :disabled="availableHands[`${HAND_PLAYER_PREFIX}${player.uuid}`].length === 0"
-          ></v-btn>
         </template>
         <Card
-            v-for="card in availableHands[`${HAND_PLAYER_PREFIX}${player.uuid}`]"
+            v-for="card in availableHands[`${HAND_ID_PLAYER_PREFIX}${player.uuid}`]"
             :key="PlayingCards.getCardID(card)"
             :card="card"
             random-layout
         ></Card>
         <template v-slot:actions>
           <v-btn
-              v-if="isEligibleForSplit(`${HAND_PLAYER_PREFIX}${player.uuid}`)"
+              v-if="isEligibleForSplit(`${HAND_ID_PLAYER_PREFIX}${player.uuid}`)"
               text="Split"
               @click.stop="splitHand(player)"
           ></v-btn>
@@ -313,5 +342,6 @@ const splitHand = (player: Player) => {
 }
 :deep(.v-btn) {
   margin: 0.5em;
+  white-space: unset;
 }
 </style>

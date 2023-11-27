@@ -1,28 +1,36 @@
 <script setup lang="ts">
 const props = withDefaults(defineProps<{
-  isActive?: boolean,
+  bust?: boolean,
   label?: string,
   singleColumn?: boolean,
   total?: number,
+  win?: boolean,
 }>(), {
+  bust: false,
   label: '',
   singleColumn: false,
+  win: false,
 });
 
 const showTotal = typeof props?.total !== 'undefined';
 </script>
 
 <template>
-  <div class="card-holder" :class="{'active': isActive}">
+  <div class="card-holder" :class="{ 'win': win }">
     <div class="header">
       <slot name="header">{{ label }}</slot>
     </div>
+
     <div class="card-row">
       <div class="card-area" :class="{'single-column': singleColumn}">
         <slot>
           <!-- TODO: add variation in offset and rotation -->
           <!-- expected <Card>(s) or <Deck> -->
         </slot>
+        <svg v-if="bust" class="bust" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+          <path d="M0 0 L100 100" />
+          <path d="M0 100 L100 0" />
+        </svg>
       </div>
       <div v-if="showTotal" class="area-total">
         <span class="total-label">Total</span>
@@ -30,6 +38,7 @@ const showTotal = typeof props?.total !== 'undefined';
         <slot name="actions"></slot>
       </div>
     </div>
+
     <slot v-if="$slots.actions" name="actions"></slot>
   </div>
 </template>
@@ -40,8 +49,8 @@ const showTotal = typeof props?.total !== 'undefined';
   --area-border-width: 3px;
   --card-holder-width: calc(350px + var(--card-width) + var(--area-border-width) * 2);
 
-  &.active {
-    --color-label: white;
+  &.win {
+    --color-label: blue;
   }
 
   /* center label and area along vertical axis */
@@ -51,6 +60,7 @@ const showTotal = typeof props?.total !== 'undefined';
   align-items: center;
 
   color: var(--color-label);
+  user-select: none;
 }
 .header {
   flex: 1 0 0;
@@ -69,6 +79,8 @@ const showTotal = typeof props?.total !== 'undefined';
 }
 .card-area {
   --card-area-padding: 15px;
+
+  position: relative; /* anchor for .bust's absolute */
 
   /*
    * CSS Grid allows us to allow cards to overlap when there are
@@ -120,6 +132,13 @@ const showTotal = typeof props?.total !== 'undefined';
     /* TODO: adjust angle along arc */
     box-shadow: 0 0 25px 15px goldenrod;
   }
+}
+.bust {
+  position: absolute;
+  stroke: rgba(255, 0, 0, 0.7);
+  stroke-width: 4px;
+  height: 100%;
+  width: 100%;
 }
 .area-total {
   display: flex;

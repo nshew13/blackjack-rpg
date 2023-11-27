@@ -30,25 +30,23 @@ const saveChanges = (event: Event) => {
   <v-btn class="rename-btn" text="Rename" @click.stop="show"></v-btn>
 
   <v-dialog v-model="showDialog" width="500">
-    <template v-slot:default>
-      <v-card class="rename-dialog" color="indigo-darken-3">
-        <v-text-field
-            v-model="inputName"
-            label="Player name"
-            variant="outlined"
-            :autofocus="true"
-            @keyup.enter.stop="saveChanges"
-            @keyup.esc.stop="cancel"
-        ></v-text-field>
+    <v-card class="rename-dialog" color="indigo-darken-3">
+      <v-text-field
+          v-model="inputName"
+          label="Player name"
+          variant="outlined"
+          :autofocus="true"
+          @keyup.enter.stop="saveChanges"
+          @keyup.esc.stop="cancel"
+      ></v-text-field>
 
-        <v-card-actions>
-          <v-spacer></v-spacer>
+      <v-card-actions>
+        <v-spacer></v-spacer>
 
-          <v-btn text="Cancel" @click.stop="cancel"></v-btn>
-          <v-btn text="Save" color="primary" @click.stop="saveChanges"></v-btn>
-        </v-card-actions>
-      </v-card>
-    </template>
+        <v-btn text="Cancel" @click.stop="cancel"></v-btn>
+        <v-btn text="Save" color="primary" @click.stop="saveChanges"></v-btn>
+      </v-card-actions>
+    </v-card>
   </v-dialog>
 </template>
 
