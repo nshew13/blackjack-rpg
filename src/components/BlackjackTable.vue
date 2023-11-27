@@ -4,7 +4,7 @@ import Card from '@/components/Card.vue';
 import CardHolder from '@/components/CardHolder.vue';
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import Deck from '@/components/Deck.vue';
-import RenameDialog from '@/components/RenameDialog.vue';
+import PlayerMenu from '@/components/PlayerMenu.vue';
 import {PlayingCards} from '@/utilities/PlayingCards';
 import {Session} from '@/utilities/Session';
 import type {TCardFacing, TDeck} from '@/utilities/PlayingCards';
@@ -53,6 +53,10 @@ const hasDealtCards = computed((): boolean => {
 
   return playerHands.value.some(hand => hand.length > 0);
 });
+
+const houseHasBlackjack = computed((): boolean => PlayingCards.hasBlackjack(houseHand.value));
+
+const houseIsBust = computed((): boolean => handIsBust(houseHand.value));
 
 const houseTotal = computed((): number => PlayingCards.totalHand(houseHand.value));
 
@@ -119,6 +123,10 @@ const addPlayer = (player?: IPlayer, skipSave = false) => {
 };
 
 const dealInitialHands = () => {
+  if (hasDealtCards.value) {
+    discardAll();
+  }
+
   hasHouseRevealed.value = false;
 
   // deal one to each player
@@ -203,6 +211,7 @@ const completeHouseHand = () => {
 
 const handIsBust = (hand: TDeck): boolean => PlayingCards.totalHand(hand) > 21;
 
+// TODO: needs work. player w/BJ and unrevealed house showed house winning
 const handWins = (hand: TDeck): boolean => {
   if (hasHouseRevealed.value) {
     const handTotal = PlayingCards.totalHand(hand);
@@ -242,12 +251,10 @@ const revealHouseHand = () => {
   hasHouseRevealed.value = true;
 }
 
-const setPlayerName = (player: IPlayer, newName: string) => {
-  if (newName) {
-    const playerIndex = players.value.findIndex(p => p.uuid === player.uuid);
-    players.value[playerIndex].name = newName;
-    Session.saveGameSession({'players': players.value});
-  }
+const setPlayerName = (updatedPlayer: IPlayer) => {
+  const playerIndex = players.value.findIndex(p => p.uuid === updatedPlayer.uuid);
+  players.value[playerIndex].name = updatedPlayer.name;
+  Session.saveGameSession({'players': players.value});
 };
 
 const splitHand = (player: IPlayer) => {
@@ -279,7 +286,7 @@ const stayPlayer = (player: IPlayer) => {
 
       <div class="main-actions">
         <v-btn text="Add Player" @click.stop="addPlayer"></v-btn>
-        <v-btn text="Deal" @click.stop="dealInitialHands" :disabled="hasDealtCards"></v-btn>
+        <v-btn :text="hasDealtCards ? 'Discard All &amp; Deal' : 'Deal'" @click.stop="dealInitialHands"></v-btn>
         <v-btn text="Discard All" @click.stop="discardAll" :disabled="!hasDealtCards"></v-btn>
       </div>
 
@@ -293,7 +300,7 @@ const stayPlayer = (player: IPlayer) => {
           @click.stop="dealToHouse"
           :bust="handIsBust(houseHand)"
           :total="hasHouseRevealed ? PlayingCards.totalHand(houseHand) : -1"
-          :win="houseWins"
+          :win="houseHasBlackjack || houseWins"
       >
         <template v-slot:header>
           <div class="player-name">House</div>
@@ -323,16 +330,16 @@ const stayPlayer = (player: IPlayer) => {
           @click.stop="dealToPlayer(player)"
           :bust="handIsBust(playerHandsMap[player.uuid])"
           :total="PlayingCards.totalHand(playerHandsMap[player.uuid])"
-          :win="handWins(playerHandsMap[player.uuid])"
+          :win="handWins(playerHandsMap[player.uuid]) || houseIsBust"
       >
         <template v-slot:header>
           <!-- TODO: move player controls to ellipsis menu -->
-          <RenameDialog @update="(evt, name) => setPlayerName(player, name)"></RenameDialog>
-          <v-btn
-              text="Remove"
-              @click.stop="removePlayer(player)"
-              :disabled="players.length <= 1"
-          ></v-btn>
+          <PlayerMenu
+              :player="player"
+              :players-count="players.length"
+              @remove="removePlayer"
+              @rename="setPlayerName"
+          ></PlayerMenu>
           <div class="player-name">{{ player.name }}</div>
         </template>
         <Card

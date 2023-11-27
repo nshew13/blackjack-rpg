@@ -1,34 +1,40 @@
 <script setup lang="ts">
-import {ref} from 'vue';
+import {ref, watchEffect} from 'vue';
+
+const props = withDefaults(defineProps<{
+  showDialog?: boolean,
+  startingValue?: string;
+}>(), {
+  showDialog: false,
+  startingValue: '',
+});
+
+const emit = defineEmits<{
+  (e: 'close'): void,
+  (e: 'update', event: Event, name: string): void,
+}>()
 
 const inputName = ref<string>('');
 const showDialog = ref<boolean>(false);
-let nameBackup = '';
-
-const emit = defineEmits<{
-  (e: 'update', event: Event, name: string): void
-}>()
+watchEffect(() => {
+  inputName.value = props.startingValue;
+  showDialog.value = props.showDialog;
+});
 
 
 const cancel = () => {
   showDialog.value = false
-  inputName.value = nameBackup;
-};
-
-const show = () => {
-  nameBackup = inputName.value;
-  showDialog.value = true
+  emit('close');
 };
 
 const saveChanges = (event: Event) => {
   emit('update', event, inputName.value);
   showDialog.value = false
+  emit('close');
 }
 </script>
 
 <template>
-  <v-btn class="rename-btn" text="Rename" @click.stop="show"></v-btn>
-
   <v-dialog v-model="showDialog" width="500">
     <v-card class="rename-dialog" color="indigo-darken-3">
       <v-text-field

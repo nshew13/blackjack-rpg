@@ -10,9 +10,9 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-  (e: 'ok'): void,
   (e: 'cancel'): void,
   (e: 'close'): void,
+  (e: 'ok'): void,
 }>()
 
 const showDialog = ref<boolean>(false);
