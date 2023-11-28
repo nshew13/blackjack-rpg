@@ -287,14 +287,14 @@ const stayPlayer = (player: IPlayer) => {
         <Deck :cards="drawDeck" @reshuffle="reshuffleDrawDeck"></Deck>
 
         <template v-slot:actions v-if="drawDeck.length <= 0">
-          <v-btn text="Shuffle" @click.stop="reshuffleDrawDeck"></v-btn>
+          <q-btn label="Shuffle" @click.stop="reshuffleDrawDeck"></q-btn>
         </template>
       </CardHolder>
 
       <div class="main-actions">
-        <v-btn text="Add Player" @click.stop="addPlayer"></v-btn>
-        <v-btn :text="hasDealtCards ? 'Discard All &amp; Deal' : 'Deal'" @click.stop="dealInitialHands"></v-btn>
-        <v-btn text="Discard All" @click.stop="discardAll" :disabled="!hasDealtCards"></v-btn>
+        <q-btn label="Add Player" @click.stop="addPlayer"></q-btn>
+        <q-btn :label="hasDealtCards ? 'Discard All &amp; Deal' : 'Deal'" @click.stop="dealInitialHands"></q-btn>
+        <q-btn label="Discard All" @click.stop="discardAll" :disabled="!hasDealtCards"></q-btn>
       </div>
 
       <CardHolder label="Discard" class="discard-pile" single-column>
@@ -311,11 +311,11 @@ const stayPlayer = (player: IPlayer) => {
       >
         <template v-slot:header>
           <div class="player-name">House</div>
-          <v-btn
-              text="Finish Hand"
+          <q-btn
+              label="Finish Hand"
               :disabled="!(hasDealtCards && !hasHouseRevealed)"
               @click.stop="completeHouseHand"
-          ></v-btn>
+          ></q-btn>
         </template>
         <Card
             v-for="card in houseHand"
@@ -357,14 +357,14 @@ const stayPlayer = (player: IPlayer) => {
         ></Card>
         <template v-slot:side>
           <div class="stay">
-            <v-btn v-if="!stayedPlayerIDs.includes(player.uuid)" text="Stay" @click.stop="stayPlayer(player)"></v-btn>
-            <v-icon v-else class="stay-icon" icon="mdi-hand-front-right" size="small" color="red"></v-icon>
+            <q-btn v-if="!stayedPlayerIDs.includes(player.uuid)" label="Stay" @click.stop="stayPlayer(player)"></q-btn>
+            <q-icon v-else class="stay-icon" name="front_hand" color="red"></q-icon>
           </div>
-          <v-btn
+          <q-btn
               v-if="isEligibleForSplit(playerHandsMap[player.uuid])"
-              text="Split"
+              label="Split"
               @click.stop="splitHand(player)"
-          ></v-btn>
+          ></q-btn>
         </template>
       </CardHolder>
     </section>

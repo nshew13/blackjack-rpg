@@ -2,18 +2,23 @@ import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import vuetify from 'vite-plugin-vuetify';
+import { quasar, transformAssetUrls } from '@quasar/vite-plugin'
 import {viteSingleFile} from 'vite-plugin-singlefile';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    vue(/*{
-      script: {
+    vue({
+      template: { transformAssetUrls },
+      /*script: {
         defineModel: true, // experimental, see https://github.com/vuejs/rfcs/discussions/503
-      },
-    }*/),
-    vuetify({ autoImport: true }),
+      },*/
+    }),
+
+    // @quasar/plugin-vite options list:
+    // https://github.com/quasarframework/quasar/blob/dev/vite-plugin/index.d.ts
+    quasar(),
+
     viteSingleFile(),
   ],
   resolve: {

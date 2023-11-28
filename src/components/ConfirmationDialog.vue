@@ -32,18 +32,16 @@ const ok = () => {
 </script>
 
 <template>
-  <v-dialog v-model="showDialog" width="500">
-      <v-card class="confirmation-dialog" color="indigo-darken-3">
+  <q-dialog v-model="showDialog" width="500">
+      <q-card class="confirmation-dialog" color="indigo-darken-3">
         {{ message }}
 
-        <v-card-actions>
-          <v-spacer></v-spacer>
-
-          <v-btn text="No" @click.stop="cancel"></v-btn>
-          <v-btn text="Yes" color="primary" @click.stop="ok"></v-btn>
-        </v-card-actions>
-      </v-card>
-  </v-dialog>
+        <q-card-actions>
+          <q-btn label="No" @click.stop="cancel"></q-btn>
+          <q-btn label="Yes" color="primary" @click.stop="ok"></q-btn>
+        </q-card-actions>
+      </q-card>
+  </q-dialog>
 </template>
 
 <style scoped>

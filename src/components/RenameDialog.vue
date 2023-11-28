@@ -35,25 +35,23 @@ const saveChanges = (event: Event) => {
 </script>
 
 <template>
-  <v-dialog v-model="showDialog" width="500">
-    <v-card class="rename-dialog" color="indigo-darken-3">
-      <v-text-field
+  <q-dialog v-model="showDialog" width="500">
+    <q-card class="rename-dialog" color="indigo-darken-3">
+      <q-input
           v-model="inputName"
           label="Player name"
-          variant="outlined"
+          outlined
           :autofocus="true"
           @keyup.enter.stop="saveChanges"
           @keyup.esc.stop="cancel"
-      ></v-text-field>
+      ></q-input>
 
-      <v-card-actions>
-        <v-spacer></v-spacer>
-
-        <v-btn text="Cancel" @click.stop="cancel"></v-btn>
-        <v-btn text="Save" color="primary" @click.stop="saveChanges"></v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+      <q-card-actions>
+        <q-btn label="Cancel" @click.stop="cancel"></q-btn>
+        <q-btn label="Save" color="primary" @click.stop="saveChanges"></q-btn>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <style scoped>

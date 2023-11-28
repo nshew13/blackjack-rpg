@@ -4,30 +4,41 @@ Card table simulator developed for use with tabletop role-playing games (TTRPGs)
 standard playing cards instead of dice (and, specifically, [Purgatory House](https://www.wicked-clever.com/purgatory-house/)
 and [Starship Infernum](https://www.wicked-clever.com/our-games/starship-infernum/)).
 
-## Requirements
+## Use
 
-Until this package provides a static build, you will need pnpm, yarn or npm.
+Simply download the [`index.html`](./dist/index.html) file from the `dist` folder. It
+contains all the code.
+
+### Technical stuff
+
+Normally, the build process would output separate JS and/or CSS files. When trying to
+open the `index.html` file locally, browsers give CORS errors about loading from `file://`.
+
+Instead, these files are in-lined using the
+[vite-plugin-singlefile](https://github.com/richardtallent/vite-plugin-singlefile) plugin
+for Vite, meaning no file requests are needed.
+
+## Development
+
+To develop and build locally, you will need pnpm, yarn, npm, etc.
 
 ### Project Setup
 
-With the package manage installed and this code downloaded, change to the project's
+With a package manage installed and this code downloaded, change to the project's
 root directory and install its dependencies.
 
 ```sh
 pnpm install
 ```
 
-TODO: the built `dist` doesn't work locally because of a CORS error.
-```sh
-pnpm build
-```
+The live dev server is available with `pnpm dev`.
 
+### Technical stuff
 
-## Tech
+This project uses the following technologies:
 
 * TypeScript
 * Vue 3
-* Vuetify for UI components
-* Vite for managing builds
+* Quasar
+* Vite
 * Vitest for unit testing
-* Pinia (maybe?) for data store

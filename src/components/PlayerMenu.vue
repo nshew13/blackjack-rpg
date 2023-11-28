@@ -34,14 +34,12 @@ const rename = (player: IPlayer, newName: string) => {
       @close="showRename = false"
   ></RenameDialog>
 
-  <v-menu transition="scale-transition">
-    <template v-slot:activator="{ props }">
-      <v-btn icon="mdi-dots-vertical" v-bind="props" size="small"></v-btn>
-    </template>
-
-    <v-list>
-      <v-list-item title="Rename" @click="showRename = true"></v-list-item>
-      <v-list-item title="Remove" @click="emit('remove', player)" :disabled="playersCount <= 1"></v-list-item>
-    </v-list>
-  </v-menu>
+  <q-btn icon="more_vert" size="small" padding="0" flat>
+    <q-menu auto-close>
+      <q-list>
+        <q-item clickable @click="showRename = true">Rename</q-item>
+        <q-item :disable="playersCount <= 1" clickable @click="emit('remove', player)">Remove</q-item>
+      </q-list>
+    </q-menu>
+  </q-btn>
 </template>
