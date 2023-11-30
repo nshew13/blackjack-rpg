@@ -85,9 +85,11 @@ const showTotal = typeof props?.total !== 'undefined';
  */
 .card-holder,
 :slotted(*.card) {
+  --cards-overlapping-per-row: 5; /* one less than total */
   --card-height: v-bind(cardHeight);
   --card-padding: v-bind(cardPadding);
   --card-width: calc(var(--card-height) * var(--card-aspect-ratio));
+  --card-overlap: max(50px, calc(0.50 * var(--card-width))); /* 50% of card width, no less than 50px */
 }
 
 .card-holder-container {
@@ -138,21 +140,26 @@ const showTotal = typeof props?.total !== 'undefined';
 
   position: relative; /* anchor for .bust's absolute */
 
-  /*
-   * CSS Grid allows us to allow cards to overlap when there are
-   * too many for the space given.
-   *
-   * TODO: auto-fit allows full face until things get cramped, but then it allows the final card to overflow
-   *       grid-template-columns: repeat(auto-fit,  minmax(10px, max-content)) ;
-   *       from https://stackoverflow.com/a/53038326/356016
-   *
-   * The area width needs to enclose 7 columns of 50px plus the
-   * remaining, full-width card. It can wrap, if more than 8 cards
-   * are needed, but the average in Blackjack is 2.7.
-   *
-   */
   display: grid;
-  grid-template-columns: repeat(8, 50px);
+  /*
+   * CSS Grid allows cards to overlap when there are too many for the space given.
+   *
+   * from https://stackoverflow.com/a/53038326/356016
+   *     grid-template-columns: repeat(auto-fit,  minmax(10px, max-content)) ;
+   *
+   * The area width needs to enclose --cards-overlapping-per-row columns of
+   * --card-overlap plus the remaining, full-width card. The row can wrap, if
+   * more than --cards-overlapping-per-row + 1 cards are needed, but the
+   * average hand in Blackjack is 2.7 cards.
+   *     grid-template-columns: repeat(var(--cards-overlapping-per-row), var(--card-overlap)) var(--card-width);
+   *
+   * This works a little better than the SO solution. It maintains the containing
+   * element's padding by accounting for a full-width card at the end. There is a
+   * noticeable hiccup as the cards start squeezing leaving room for that last one,
+   * until they can no longer squeeze and the last slot is taken. After the first
+   * row adjusts, subsequent rows are already aligned as needed.
+   */
+  grid-template-columns: repeat(auto-fit,  minmax(var(--card-overlap), max-content)) var(--card-width);
   align-items: center;
   row-gap: var(--card-area-padding);
 
@@ -162,7 +169,7 @@ const showTotal = typeof props?.total !== 'undefined';
   border-radius: var(--card-corner-radius);
 
   width: calc(
-    calc(0.50 * var(--card-width) * 7) /* 50% each of first 7 overlapping cards */
+    calc(var(--card-overlap) * var(--cards-overlapping-per-row)) /* each of first X cards overlaps */
     + var(--card-width) /* final, whole card */
     + var(--card-area-padding) * 2
     + var(--area-border-width) * 2
