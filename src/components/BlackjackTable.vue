@@ -2,9 +2,10 @@
 import {computed, onBeforeMount, ref, watch} from 'vue';
 import Card from '@/components/Card.vue';
 import CardHolder from '@/components/CardHolder.vue';
-import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
+import ConfirmationDialog from '@/components/controls/ConfirmationDialog.vue';
 import Deck from '@/components/Deck.vue';
-import PlayerMenu from '@/components/PlayerMenu.vue';
+import PlayerName from '@/components/controls/PlayerName.vue';
+import PlayerRemove from '@/components/controls/PlayerRemove.vue';
 import {PlayingCards} from '@/utilities/PlayingCards';
 import {Session} from '@/utilities/Session';
 import type {TCardFacing, TDeck} from '@/utilities/PlayingCards';
@@ -41,6 +42,10 @@ const stayedPlayerIDs = ref<string[]>([]);
  */
 const playerHandsMap: Ref<TCardHolderMapRef> = ref({});
 const houseHand: Ref<TDeck> = ref([]);
+
+const allPlayersAreFinished = computed((): boolean => {
+  return stayedPlayerIDs.value.length + playerHands.value.filter(hand => handIsBust(hand)).length === playerHands.value.length;
+});
 
 const allPlayersAreBust = computed((): boolean => {
   return playerHands.value.every(hand => handIsBust(hand));
@@ -83,9 +88,15 @@ watch(allPlayersAreBust, () => {
 
 watch(stayedPlayerIDs, () => {
   if (stayedPlayerIDs.value.length === playerHands.value.length) {
-    revealHouseHand();
+    completeHouseHand();
   }
 }, { deep: true });
+
+watch(allPlayersAreFinished, () => {
+  if (allPlayersAreFinished.value) {
+    completeHouseHand();
+  }
+});
 
 onBeforeMount(() => {
   // load from saved state
@@ -158,6 +169,10 @@ const dealInitialHands = () => {
 };
 
 const dealTo = (hand: TDeck, facing: TCardFacing = 'up') => {
+  if (drawDeck.value.length === 0) {
+    reshuffleDrawDeck();
+  }
+
   if (handIsBust(hand)) {
     console.log('Hand is bust. I cannot even deal.');
     return;
@@ -213,12 +228,13 @@ const completeHouseHand = () => {
     while (houseTotal.value < HOUSE_STAYS) {
       dealToHouse();
     }
+    // TODO: compare scores to see if house wins
   }
 }
 
 const handIsBust = (hand: TDeck): boolean => PlayingCards.totalHand(hand) > 21;
 
-// TODO: needs work. player w/BJ and unrevealed house showed house winning
+// TODO: should player w/BJ automatically stay?
 const handWins = (hand: TDeck): boolean => {
   if (hasHouseRevealed.value) {
     const handTotal = PlayingCards.totalHand(hand);
@@ -236,6 +252,7 @@ const removePlayer = (player: IPlayer) => {
   const playerIndex = players.value.findIndex(p => p.uuid === player.uuid);
 
   players.value.splice(playerIndex, 1);
+  discardHand(playerHandsMap.value[player.uuid]);
   delete playerHandsMap.value[player.uuid];
 
   Session.saveGameSession({
@@ -244,12 +261,18 @@ const removePlayer = (player: IPlayer) => {
 };
 
 const reshuffleDrawDeck = () => {
+  // only allow reshuffle if draw deck is empty
   if (drawDeck.value.length === 0) {
-    drawDeck.value = PlayingCards.shuffleDeck(PlayingCards.generateDeck());
-  } else {
-    drawDeck.value = PlayingCards.shuffleDeck(discardDeck.value);
-    discardDeck.value.length = 0;
+    // we can only shuffle from the discard pile
+    if (discardDeck.value.length > 0) {
+      console.debug(`Reshuffling ${discardDeck.value.length} cards from the discard pile.`);
+      drawDeck.value = PlayingCards.shuffleDeck(discardDeck.value);
+      discardDeck.value.length = 0;
+    } else {
+      throw new Error('No cards available to reshuffle.');
+    }
   }
+
   Session.saveGameSession({'drawDeck': drawDeck.value});
 }
 
@@ -258,9 +281,9 @@ const revealHouseHand = () => {
   hasHouseRevealed.value = true;
 }
 
-const setPlayerName = (updatedPlayer: IPlayer) => {
+const updatePlayer = (updatedPlayer: IPlayer) => {
   const playerIndex = players.value.findIndex(p => p.uuid === updatedPlayer.uuid);
-  players.value[playerIndex].name = updatedPlayer.name;
+  players.value[playerIndex] = JSON.parse(JSON.stringify(updatedPlayer));
   Session.saveGameSession({'players': players.value});
 };
 
@@ -345,13 +368,8 @@ const stayPlayer = (player: IPlayer) => {
           :win="handWins(playerHandsMap[player.uuid]) || (houseIsBust && !handIsBust(playerHandsMap[player.uuid]))"
       >
         <template #header>
-          <PlayerMenu
-              :player="player"
-              :players-count="players.length"
-              @remove="removePlayer"
-              @rename="setPlayerName"
-          ></PlayerMenu>
-          <div class="player-name">{{ player.name }}</div>
+          <PlayerName :player="player" @rename="updatePlayer"></PlayerName>
+          <PlayerRemove :player="player" :disable="players.length <= 1" @remove="removePlayer"></PlayerRemove>
         </template>
         <template #default="{ cardSize }">
           <Card
@@ -408,10 +426,9 @@ const stayPlayer = (player: IPlayer) => {
   flex-wrap: wrap;
   justify-content: space-around;
 }
-.player-name {
+.player-name,
+:deep(.player-name) {
   flex: 1 0 0;
-  overflow-x: clip;
-  text-overflow: ellipsis;
 }
 .stay {
   min-height: 54px; /* accommodate small icon */

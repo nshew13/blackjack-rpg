@@ -49,31 +49,29 @@ const showTotal = typeof props?.total !== 'undefined';
 </script>
 
 <template>
-  <div class="card-holder-container">
-    <div class="card-holder" :class="{ 'win': win }">
-      <div class="header">
-        <slot name="header">{{ label }}</slot>
-      </div>
-
-      <div class="card-row">
-        <div class="card-area" :class="{'single-column': singleColumn}" @click.stop="emit('deal')">
-          <slot :card-size="cardSize">
-            <!-- expected <Card>(s) or <Deck> -->
-          </slot>
-          <svg v-if="bust" class="bust" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
-            <path d="M0 0 L100 100" />
-            <path d="M0 100 L100 0" />
-          </svg>
-        </div>
-        <div v-if="showTotal" class="area-total">
-          <span class="total-label">Total</span>
-          <span>{{ total && total < 0 ? '--' : total }}</span>
-          <slot name="side"></slot>
-        </div>
-      </div>
-
-      <slot v-if="$slots.actions" name="actions"></slot>
+  <div class="card-holder" :class="{ 'win': win }">
+    <div class="header">
+      <slot name="header">{{ label }}</slot>
     </div>
+
+    <div class="card-row">
+      <div class="card-area" :class="{'single-column': singleColumn}" @click.stop="emit('deal')">
+        <slot :card-size="cardSize">
+          <!-- expected <Card>(s) or <Deck> -->
+        </slot>
+        <svg v-if="bust" class="bust" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+          <path d="M0 0 L100 100" />
+          <path d="M0 100 L100 0" />
+        </svg>
+      </div>
+      <div v-if="showTotal" class="area-total">
+        <span class="total-label">Total</span>
+        <span>{{ total && total < 0 ? '--' : total }}</span>
+        <slot name="side"></slot>
+      </div>
+    </div>
+
+    <slot v-if="$slots.actions" name="actions"></slot>
   </div>
 </template>
 
@@ -92,13 +90,6 @@ const showTotal = typeof props?.total !== 'undefined';
   --card-overlap: max(50px, calc(0.50 * var(--card-width))); /* 50% of card width, no less than 50px */
 }
 
-.card-holder-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  margin-bottom: 1em;
-}
 .card-holder {
   --color-label: goldenrod;
   --color-border: var(--color-label);
@@ -106,7 +97,7 @@ const showTotal = typeof props?.total !== 'undefined';
   --card-holder-width: calc(350px + var(--card-width) + var(--area-border-width) * 2);
 
   &.win {
-    --color-border: blue;
+    --color-border: blue; /* TODO: something that stands out, or animate */
   }
 
   /* center label and area along vertical axis */
@@ -163,7 +154,7 @@ const showTotal = typeof props?.total !== 'undefined';
   align-items: center;
   row-gap: var(--card-area-padding);
 
-  margin: 15px;
+  margin: 15px 15px 15px 0;
   padding: var(--card-area-padding);
   cursor: pointer;
   border-radius: var(--card-corner-radius);
@@ -178,10 +169,10 @@ const showTotal = typeof props?.total !== 'undefined';
   /* start with the height of one card row */
   min-height: calc(var(--card-height) + var(--card-area-padding) * 2 + var(--area-border-width) * 2);
 
-  /* TODO?: move border to card-row to include total */
   border: var(--area-border-width) double var(--color-border);
 
   &.single-column {
+    margin: 15px;
     width: calc(
         var(--card-width)
         + var(--card-area-padding) * 2
