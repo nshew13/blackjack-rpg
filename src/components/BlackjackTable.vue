@@ -302,10 +302,12 @@ const stayPlayer = (player: IPlayer) => {
       </CardHolder>
     </section>
 
-    <section class="house">
+    <section class="hands">
+      <!-- House -->
       <CardHolder
           @deal="dealToHouse"
           :bust="handIsBust(houseHand)"
+          card-size="small"
           :total="hasHouseRevealed ? PlayingCards.totalHand(houseHand) : -1"
           :win="houseHasBlackjack || houseWins"
       >
@@ -317,20 +319,22 @@ const stayPlayer = (player: IPlayer) => {
               @click.stop="completeHouseHand"
           ></q-btn>
         </template>
-        <Card
-            v-for="card in houseHand"
-            :key="card.id"
-            :card="card"
-            random-layout
-            @card-reveal="hasHouseRevealed = true"
-        ></Card>
+        <template #default="{ cardSize }">
+          <Card
+              v-for="card in houseHand"
+              :key="card.id"
+              :card="card"
+              :card-size="cardSize"
+              random-layout
+              @card-reveal="hasHouseRevealed = true"
+          ></Card>
+        </template>
       </CardHolder>
-    </section>
 
-<!-- TODO: allow d&d sorting -->
-<!-- TODO: allow pinning -->
-<!-- TODO: allow swap in/out groups of players -->
-    <section class="players">
+  <!-- TODO: allow d&d sorting -->
+  <!-- TODO: allow pinning -->
+  <!-- TODO: allow swap in/out groups of players -->
+      <!-- players -->
       <CardHolder
           v-for="player in players"
           :key="player.uuid"
@@ -371,7 +375,6 @@ const stayPlayer = (player: IPlayer) => {
         </template>
       </CardHolder>
     </section>
-
 <!-- TODO:
     <CardHolder
         label="Split"
@@ -391,7 +394,7 @@ const stayPlayer = (player: IPlayer) => {
 .decks {
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: center;
 }
 .main-actions {
   align-self: stretch;
@@ -400,10 +403,18 @@ const stayPlayer = (player: IPlayer) => {
   flex-direction: column;
   justify-content: space-evenly;
 }
+.hands {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
 .player-name {
   flex: 1 0 0;
   overflow-x: clip;
   text-overflow: ellipsis;
+}
+.stay {
+  min-height: 54px; /* accommodate small icon */
 }
 .stay > * {
   display: inline;

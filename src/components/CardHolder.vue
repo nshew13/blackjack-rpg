@@ -21,6 +21,8 @@ const emit = defineEmits<{
   (e: 'deal'): void,
 }>();
 
+const headerAlign = computed(() => props.singleColumn ? 'center' : 'stretch');
+
 const cardHeight = computed(() => {
   switch (props.cardSize) {
     case 'large':
@@ -117,7 +119,7 @@ const showTotal = typeof props?.total !== 'undefined';
   user-select: none;
 }
 .header {
-  align-self: stretch;
+  align-self: v-bind(headerAlign);
 
   display: flex;
   flex-wrap: nowrap;

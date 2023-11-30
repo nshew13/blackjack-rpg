@@ -1,5 +1,3 @@
-@import './base.css';
-
 :root {
   --card-aspect-ratio: 25 / 35;
   --card-corner-radius: 10px;
