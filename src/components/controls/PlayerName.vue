@@ -17,12 +17,14 @@ watchEffect(() => {
   inputName.value = props.player.name;
 });
 
-const validatePlayerName = (updatedName: string) => {
-  errorMessage.value = '';
+const validatePlayerName = (updatedName?: string) => {
+  if (updatedName) {
+    errorMessage.value = '';
 
-  if (updatedName === '') {
-    errorMessage.value = 'Name can\'t be empty.';
-    return false;
+    if (updatedName === '') {
+      errorMessage.value = 'Name can\'t be empty.';
+      return false;
+    }
   }
 
   return true;
