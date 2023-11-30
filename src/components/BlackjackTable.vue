@@ -292,7 +292,7 @@ const stayPlayer = (player: IPlayer) => {
       </CardHolder>
 
       <div class="main-actions">
-        <q-btn label="Add Player" @click.stop="addPlayer"></q-btn>
+        <q-btn label="Add Player" @click.stop="() => addPlayer()"></q-btn>
         <q-btn :label="hasDealtCards ? 'Discard All &amp; Deal' : 'Deal'" @click.stop="dealInitialHands"></q-btn>
         <q-btn label="Discard All" @click.stop="discardAll" :disabled="!hasDealtCards"></q-btn>
       </div>
@@ -342,7 +342,7 @@ const stayPlayer = (player: IPlayer) => {
           :bust="handIsBust(playerHandsMap[player.uuid])"
           card-size="small"
           :total="PlayingCards.totalHand(playerHandsMap[player.uuid])"
-          :win="handWins(playerHandsMap[player.uuid]) || houseIsBust"
+          :win="handWins(playerHandsMap[player.uuid]) || (houseIsBust && !handIsBust(playerHandsMap[player.uuid]))"
       >
         <template #header>
           <PlayerMenu
