@@ -2,12 +2,14 @@
 import {computed} from 'vue';
 import {PlayingCards} from '@/utilities/PlayingCards';
 import SuitSymbol from '@/components/SuitSymbol.vue';
-import type {ICard} from '@/utilities/PlayingCards';
+import type {ICard, TCardSize} from '@/utilities/PlayingCards';
 
 const props = withDefaults(defineProps<{
   card: ICard,
+  cardSize?: TCardSize,
   randomLayout?: boolean
 }>(), {
+  cardSize: 'large',
   randomLayout: false,
 });
 
@@ -16,10 +18,7 @@ const emit = defineEmits<{
 }>()
 
 
-let isFaceUp = computed(() => props.card.facing === 'up');
-
-const randomAngle = Math.floor((Math.random() - 0.5) * 10);
-const randomOffset = Math.floor((Math.random() - 0.5) * 10);
+const isFaceUp = computed(() => props.card.facing === 'up');
 
 const getStyle = computed(() => {
   const styles: Record<string, string> = {
@@ -32,6 +31,24 @@ const getStyle = computed(() => {
   return styles;
 });
 
+const cardClasses = computed(() => {
+  return [
+    { 'face-down': !isFaceUp.value },
+    props.cardSize,
+  ];
+});
+
+const faceClasses = computed(() => {
+  if (props.cardSize === 'large') {
+    return 'corner top-left';
+  }
+
+  return 'marker';
+});
+
+const randomAngle = Math.floor((Math.random() - 0.5) * 10);
+const randomOffset = Math.floor((Math.random() - 0.5) * 10);
+
 const flipCardUp = () => {
   if (props.card.facing === 'down') {
     emit('card-reveal');
@@ -43,30 +60,38 @@ const flipCardUp = () => {
 <template>
   <div
       class="card"
-      :class="{'face-down': !isFaceUp}"
+      :class="cardClasses"
       :style="getStyle"
       @click="flipCardUp"
   >
     <template v-if="isFaceUp">
-      <div class="corner top-left">
+      <div :class="faceClasses">
         {{ props.card.value }} <SuitSymbol :suit="props.card.suit"></SuitSymbol>
       </div>
-      <div class="corner bottom-right">
+      <div v-if="cardSize === 'large'" class="corner bottom-right">
         {{ props.card.value }} <SuitSymbol :suit="props.card.suit"></SuitSymbol>
       </div>
     </template>
   </div>
 </template>
 
+<!--suppress CssUnusedSymbol -->
 <style scoped>
 .card {
-  --card-padding: 10px;
+  &.small {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+  }
 
   position: relative; /* for corner positioning */
 
   box-sizing: border-box;
+  aspect-ratio: var(--card-aspect-ratio);
   height: var(--card-height);
-  width: var(--card-width);
+  width: auto;
   padding: var(--card-padding);
 
   font-family: "BioRhyme", "Droid Serif", serif;

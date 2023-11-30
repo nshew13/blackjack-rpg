@@ -1,12 +1,17 @@
 <script setup lang="ts">
+import {computed} from 'vue';
+import type {TCardSize} from '@/utilities/PlayingCards';
+
 const props = withDefaults(defineProps<{
   bust?: boolean,
+  cardSize?: TCardSize,
   label?: string,
   singleColumn?: boolean,
   total?: number,
   win?: boolean,
 }>(), {
   bust: false,
+  cardSize: 'large',
   label: '',
   singleColumn: false,
   win: false,
@@ -15,6 +20,28 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   (e: 'deal'): void,
 }>();
+
+const cardHeight = computed(() => {
+  switch (props.cardSize) {
+    case 'large':
+    default:
+      return '150px';
+
+    case 'small':
+      return '90px';
+  }
+})
+
+const cardPadding = computed(() => {
+  switch (props.cardSize) {
+    case 'large':
+    default:
+      return '10px';
+
+    case 'small':
+      return '0';
+  }
+})
 
 const showTotal = typeof props?.total !== 'undefined';
 </script>
@@ -28,8 +55,7 @@ const showTotal = typeof props?.total !== 'undefined';
 
       <div class="card-row">
         <div class="card-area" :class="{'single-column': singleColumn}" @click.stop="emit('deal')">
-          <slot>
-            <!-- TODO: add variation in offset and rotation -->
+          <slot :card-size="cardSize">
             <!-- expected <Card>(s) or <Deck> -->
           </slot>
           <svg v-if="bust" class="bust" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
@@ -49,7 +75,19 @@ const showTotal = typeof props?.total !== 'undefined';
   </div>
 </template>
 
+<!--suppress CssUnusedSymbol -->
 <style scoped>
+/*
+ * Declare the CSS variables once, in this component, so they can
+ * affect both the sizing of CardHolder and of the slotted Cards.
+ */
+.card-holder,
+:slotted(*.card) {
+  --card-height: v-bind(cardHeight);
+  --card-padding: v-bind(cardPadding);
+  --card-width: calc(var(--card-height) * var(--card-aspect-ratio));
+}
+
 .card-holder-container {
   display: flex;
   flex-direction: column;
@@ -119,15 +157,17 @@ const showTotal = typeof props?.total !== 'undefined';
   margin: 15px;
   padding: var(--card-area-padding);
   cursor: pointer;
+  border-radius: var(--card-corner-radius);
 
   width: calc(
-      350px /* 350px = 50px * 7 overlapping cards */
-      + var(--card-width) /* final, whole card */
-      + var(--card-area-padding) * 2
-      + var(--area-border-width) * 2
+    calc(0.50 * var(--card-width) * 7) /* 50% each of first 7 overlapping cards */
+    + var(--card-width) /* final, whole card */
+    + var(--card-area-padding) * 2
+    + var(--area-border-width) * 2
   );
+
+  /* start with the height of one card row */
   min-height: calc(var(--card-height) + var(--card-area-padding) * 2 + var(--area-border-width) * 2);
-  border-radius: var(--card-corner-radius);
 
   /* TODO?: move border to card-row to include total */
   border: var(--area-border-width) double var(--color-border);

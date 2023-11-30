@@ -2,9 +2,11 @@ const Values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'
 const Suits = ['clubs', 'diamonds', 'hearts', 'spades'] as const;
 
 export type TCardValue = typeof Values[number];
+export type TCardSize = 'large' | 'small';
 export type TCardSuit = typeof Suits[number];
 export type TCardFacing = 'down' | 'up';
 export type TCardColor = 'black' | 'red';
+
 export interface ICard {
     facing: TCardFacing;
     id: string;

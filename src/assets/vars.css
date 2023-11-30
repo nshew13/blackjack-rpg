@@ -2,7 +2,5 @@
 
 :root {
   --card-aspect-ratio: 25 / 35;
-  --card-height: 150px;
-  --card-width: calc(var(--card-height) * var(--card-aspect-ratio));
   --card-corner-radius: 10px;
 }

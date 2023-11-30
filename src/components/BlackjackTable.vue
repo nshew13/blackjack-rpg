@@ -286,7 +286,7 @@ const stayPlayer = (player: IPlayer) => {
       <CardHolder label="Draw" class="draw-deck" single-column>
         <Deck :cards="drawDeck" @reshuffle="reshuffleDrawDeck"></Deck>
 
-        <template v-slot:actions v-if="drawDeck.length <= 0">
+        <template #actions v-if="drawDeck.length <= 0">
           <q-btn label="Shuffle" @click.stop="reshuffleDrawDeck"></q-btn>
         </template>
       </CardHolder>
@@ -309,7 +309,7 @@ const stayPlayer = (player: IPlayer) => {
           :total="hasHouseRevealed ? PlayingCards.totalHand(houseHand) : -1"
           :win="houseHasBlackjack || houseWins"
       >
-        <template v-slot:header>
+        <template #header>
           <div class="player-name">House</div>
           <q-btn
               label="Finish Hand"
@@ -336,11 +336,11 @@ const stayPlayer = (player: IPlayer) => {
           :key="player.uuid"
           @deal="dealToPlayer(player)"
           :bust="handIsBust(playerHandsMap[player.uuid])"
+          card-size="small"
           :total="PlayingCards.totalHand(playerHandsMap[player.uuid])"
           :win="handWins(playerHandsMap[player.uuid]) || houseIsBust"
       >
-        <template v-slot:header>
-          <!-- TODO: move player controls to ellipsis menu -->
+        <template #header>
           <PlayerMenu
               :player="player"
               :players-count="players.length"
@@ -349,13 +349,16 @@ const stayPlayer = (player: IPlayer) => {
           ></PlayerMenu>
           <div class="player-name">{{ player.name }}</div>
         </template>
-        <Card
-            v-for="card in playerHandsMap[player.uuid]"
-            :key="PlayingCards.getCardID(card)"
-            :card="card"
-            random-layout
-        ></Card>
-        <template v-slot:side>
+        <template #default="{ cardSize }">
+          <Card
+              v-for="card in playerHandsMap[player.uuid]"
+              :key="PlayingCards.getCardID(card)"
+              :card="card"
+              :card-size="cardSize"
+              random-layout
+          ></Card>
+        </template>
+        <template #side>
           <div class="stay">
             <q-btn v-if="!stayedPlayerIDs.includes(player.uuid)" label="Stay" @click.stop="stayPlayer(player)"></q-btn>
             <q-icon v-else class="stay-icon" name="front_hand" color="red"></q-icon>
