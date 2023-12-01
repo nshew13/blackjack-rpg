@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {ref, watchEffect} from 'vue';
-import type {IPlayer} from '@/components/BlackjackTable.vue';
+import type {IPlayer} from '@/types/IPlayer';
 import type {QInput} from 'quasar';
 
 const props = defineProps<{

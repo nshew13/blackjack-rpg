@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type {IPlayer} from '@/components/BlackjackTable.vue';
+import type {IPlayer} from '@/types/IPlayer';
 
 const props = withDefaults(defineProps<{
   player: IPlayer,

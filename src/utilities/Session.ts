@@ -1,6 +1,5 @@
 import type {TDeck} from '@/utilities/PlayingCards';
-import type {IPlayer} from '@/components/BlackjackTable.vue';
-
+import type {IPlayer} from '@/types/IPlayer';
 
 export interface SessionStore {
     drawDeck?: TDeck;

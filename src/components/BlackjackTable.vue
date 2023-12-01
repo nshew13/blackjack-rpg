@@ -8,14 +8,10 @@ import PlayerName from '@/components/controls/PlayerName.vue';
 import PlayerRemove from '@/components/controls/PlayerRemove.vue';
 import {PlayingCards} from '@/utilities/PlayingCards';
 import {Session} from '@/utilities/Session';
-import type {TCardFacing, TDeck} from '@/utilities/PlayingCards';
+import type {IPlayer} from '@/types/IPlayer';
 import type {Ref} from 'vue';
 import type {SessionStore} from '@/utilities/Session';
-
-export interface IPlayer {
-  name: string;
-  uuid: string;
-}
+import type {TCardFacing, TDeck} from '@/utilities/PlayingCards';
 
 type TCardHolderMapRef = Record<string /* IPlayer.uuid */, TDeck>;
 
