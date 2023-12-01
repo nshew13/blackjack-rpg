@@ -41,4 +41,4 @@ This project uses the following technologies:
 * Vue 3
 * Quasar
 * Vite
-* Vitest for unit testing
+* Vitest

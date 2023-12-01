@@ -4,8 +4,10 @@ import Card from '@/components/Card.vue';
 import CardHolder from '@/components/CardHolder.vue';
 import ConfirmationDialog from '@/components/controls/ConfirmationDialog.vue';
 import Deck from '@/components/Deck.vue';
+import PlayerAddToGroup from '@/components/controls/PlayerAddToGroup.vue';
 import PlayerName from '@/components/controls/PlayerName.vue';
 import PlayerRemove from '@/components/controls/PlayerRemove.vue';
+import PlayerToggle from '@/components/controls/PlayerToggle.vue';
 import {PlayingCards} from '@/utilities/PlayingCards';
 import {Session} from '@/utilities/Session';
 import type {IPlayer} from '@/types/IPlayer';
@@ -365,6 +367,8 @@ const stayPlayer = (player: IPlayer) => {
       >
         <template #header>
           <PlayerName :player="player" @rename="updatePlayer"></PlayerName>
+          <PlayerAddToGroup :player="player"></PlayerAddToGroup>
+          <PlayerToggle :player="player" is-enabled></PlayerToggle>
           <PlayerRemove :player="player" :disable="players.length <= 1" @remove="removePlayer"></PlayerRemove>
         </template>
         <template #default="{ cardSize }">
