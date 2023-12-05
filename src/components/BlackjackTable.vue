@@ -5,12 +5,13 @@ import CardHolder from '@/components/CardHolder.vue';
 import ConfirmationDialog from '@/components/controls/ConfirmationDialog.vue';
 import Deck from '@/components/Deck.vue';
 import PlayerAddToGroup from '@/components/controls/PlayerAddToGroup.vue';
+import PlayerGroupDropdown from '@/components/controls/PlayerGroupDropdown.vue';
 import PlayerName from '@/components/controls/PlayerName.vue';
 import PlayerRemove from '@/components/controls/PlayerRemove.vue';
 import PlayerToggle from '@/components/controls/PlayerToggle.vue';
 import {PlayingCards} from '@/utilities/PlayingCards';
 import {Session} from '@/utilities/Session';
-import type {IPlayer} from '@/types/IPlayer';
+import type {IPlayer, IPlayerGroup} from '@/types/IPlayer';
 import type {Ref} from 'vue';
 import type {SessionStore} from '@/utilities/Session';
 import type {TCardFacing, TDeck} from '@/utilities/PlayingCards';
@@ -29,6 +30,7 @@ let nextPlayerNumber = 1;
 const drawDeck = ref<TDeck>([]);
 const discardDeck = ref<TDeck>([]);
 const players = ref<IPlayer[]>([]);
+const playerGroups = ref<IPlayerGroup[]>([]);
 
 const hasHouseRevealed = ref<boolean>(false);
 const houseWins = ref<boolean>(false);
@@ -279,10 +281,8 @@ const revealHouseHand = () => {
   hasHouseRevealed.value = true;
 }
 
-const updatePlayer = (updatedPlayer: IPlayer) => {
-  const playerIndex = players.value.findIndex(p => p.uuid === updatedPlayer.uuid);
-  players.value[playerIndex] = JSON.parse(JSON.stringify(updatedPlayer));
-  Session.saveGameSession({'players': players.value});
+const showGroup = (selectedGroup: IPlayerGroup) => {
+  console.log(`TODO: show group ${selectedGroup.name}`);
 };
 
 const splitHand = (player: IPlayer) => {
@@ -291,6 +291,12 @@ const splitHand = (player: IPlayer) => {
 
 const stayPlayer = (player: IPlayer) => {
   stayedPlayerIDs.value.push(player.uuid);
+};
+
+const updatePlayer = (updatedPlayer: IPlayer) => {
+  const playerIndex = players.value.findIndex(p => p.uuid === updatedPlayer.uuid);
+  players.value[playerIndex] = JSON.parse(JSON.stringify(updatedPlayer));
+  Session.saveGameSession({'players': players.value});
 };
 </script>
 
@@ -312,10 +318,17 @@ const stayPlayer = (player: IPlayer) => {
         </template>
       </CardHolder>
 
+      <!-- TODO: bulk add to group -->
+      <!-- TODO: remove from/change group -->
       <div class="main-actions">
         <q-btn label="Add Player" @click.stop="() => addPlayer()"></q-btn>
         <q-btn :label="hasDealtCards ? 'Discard All &amp; Deal' : 'Deal'" @click.stop="dealInitialHands"></q-btn>
         <q-btn label="Discard All" @click.stop="discardAll" :disabled="!hasDealtCards"></q-btn>
+        <PlayerGroupDropdown
+            help-text="Select group to enable"
+            :player-groups="playerGroups"
+            @select="showGroup"
+        ></PlayerGroupDropdown>
       </div>
 
       <CardHolder label="Discard" class="discard-pile" single-column>
@@ -367,7 +380,7 @@ const stayPlayer = (player: IPlayer) => {
       >
         <template #header>
           <PlayerName :player="player" @rename="updatePlayer"></PlayerName>
-          <PlayerAddToGroup :player="player"></PlayerAddToGroup>
+          <PlayerAddToGroup :player="player" :player-groups="playerGroups"></PlayerAddToGroup>
           <PlayerToggle :player="player" is-enabled></PlayerToggle>
           <PlayerRemove :player="player" :disable="players.length <= 1" @remove="removePlayer"></PlayerRemove>
         </template>

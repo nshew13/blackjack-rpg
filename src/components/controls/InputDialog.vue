@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {ref, watchEffect} from 'vue';
+import {QInput} from 'quasar';
 
 const props = withDefaults(defineProps<{
   fieldLabel?: string,
@@ -14,7 +15,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   (e: 'close'): void,
   (e: 'update', event: Event, name: string): void,
-}>()
+}>();
 
 const inputField = ref<string>('');
 const showDialog = ref<boolean>(false);
@@ -37,9 +38,14 @@ const saveChanges = (event: Event) => {
 </script>
 
 <template>
-  <q-dialog v-model="showDialog" width="500">
+  <q-dialog
+      v-model="showDialog"
+      width="500"
+      @show="($refs.input as QInput).select()"
+  >
     <q-card class="input-dialog" color="indigo-darken-3">
       <q-input
+          ref="input"
           v-model="inputField"
           :label="fieldLabel"
           outlined

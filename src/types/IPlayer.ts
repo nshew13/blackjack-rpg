@@ -7,5 +7,5 @@ export interface IPlayer {
 export interface IPlayerGroup {
     name: string;
     // uuid: string;
-    playerIDs: Array<IPlayer['uuid']>;
+    playerIDs: Set<IPlayer['uuid']>;
 }
