@@ -30,9 +30,8 @@ let nextPlayerNumber = 1;
 const drawDeck = ref<TDeck>([]);
 const discardDeck = ref<TDeck>([]);
 const players = ref<IPlayer[]>([]);
-// TODO: fix players in multiple groups
 const playerGroups = ref<IPlayerGroup[]>([]);
-const selectedGroup = ref<IPlayerGroup>();
+const selectedGroupID = ref<IPlayerGroup['uuid']>();
 
 const hasHouseRevealed = ref<boolean>(false);
 const houseWins = ref<boolean>(false);
@@ -55,7 +54,7 @@ const allPlayersAreBust = computed((): boolean => {
 
 const enabledPlayers = computed((): Array<IPlayer> => {
   // do we have groups defined
-  if (playerGroups.value.length > 0 && selectedGroup.value) {
+  if (playerGroups.value.length > 0 && selectedGroupID.value) {
     return players.value.filter(p => p.enabled);
   }
 
@@ -82,6 +81,10 @@ const playerHands = computed((): Array<TDeck> => {
   }
 
   return Object.values(playerHandsMap.value);
+});
+
+const selectedGroup = computed((): IPlayerGroup | undefined => {
+	return playerGroups.value.find(g => g.uuid === selectedGroupID.value);
 });
 
 const sortedPlayers = computed((): Array<IPlayer> => {
@@ -128,20 +131,17 @@ watch(allPlayersAreFinished, () => {
 // switch to first created group
 const stopWatchPlayerGroups = watch(playerGroups, () => {
   if (playerGroups.value.length === 1) {
-    selectedGroup.value = playerGroups.value[0];
+	  selectedGroupID.value = playerGroups.value[0].uuid;
     stopWatchPlayerGroups();
   }
 }, { deep: true });
 
 // TODO: animate dis/enabling
-watch(selectedGroup, (newGroup, oldGroup) => {
-  if (newGroup?.uuid && newGroup.uuid !== oldGroup?.uuid) {
-    const group = playerGroups.value.find(g => g.uuid === newGroup.uuid);
-    if (group) {
-      players.value.forEach(player => {
-        player.enabled = group.playerIDs.has(player.uuid);
-      });
-    }
+watch(selectedGroupID, (newGroupID, oldGroupID) => {
+  if (newGroupID && newGroupID !== oldGroupID) {
+	  players.value.forEach(player => {
+	    player.enabled = player?.inGroup === newGroupID;
+	  });
   }
 });
 
@@ -174,16 +174,18 @@ const addPlayer = (player?: IPlayer, skipSave = false) => {
   const playerNumber = nextPlayerNumber++;
   playerHandsMap.value[uuid] = [] as TDeck;
 
-  players.value.push({
-    enabled: true,
-    name: player?.name ?? `Player ${playerNumber}`,
-    uuid,
-  });
+  const newPlayer: IPlayer = {
+	  enabled: true,
+	  name: player?.name ?? `Player ${playerNumber}`,
+	  uuid,
+  };
 
   // add to selected group, if defined
-  if (selectedGroup.value) {
-    selectedGroup.value.playerIDs.add(uuid)
+  if (selectedGroupID.value) {
+	  newPlayer.inGroup = selectedGroupID.value;
   }
+
+	players.value.push(newPlayer);
 
   if (!skipSave) {
     Session.saveGameSession({
@@ -335,7 +337,7 @@ const revealHouseHand = () => {
 }
 
 const showGroup = (group: IPlayerGroup) => {
-  selectedGroup.value = group;
+	selectedGroupID.value = group.uuid;
 };
 
 const splitHand = (player: IPlayer) => {
@@ -347,6 +349,7 @@ const stayPlayer = (player: IPlayer) => {
 };
 
 const updatePlayer = (updatedPlayer: IPlayer) => {
+	console.log('updated player', JSON.parse(JSON.stringify(updatedPlayer)));
   const playerIndex = players.value.findIndex(p => p.uuid === updatedPlayer.uuid);
   players.value[playerIndex] = JSON.parse(JSON.stringify(updatedPlayer));
   Session.saveGameSession({'players': players.value});
@@ -435,7 +438,7 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
       >
         <template #header>
           <PlayerName :player="player" @rename="updatePlayer"></PlayerName>
-          <PlayerAddToGroup :player="player" v-model="playerGroups"></PlayerAddToGroup>
+          <PlayerAddToGroup :player="player" v-model="playerGroups" @update:player="updatePlayer"></PlayerAddToGroup>
           <PlayerToggle :player="player" v-model="player.enabled"></PlayerToggle>
           <PlayerRemove :player="player" :disable="players.length <= 1" @remove="removePlayer"></PlayerRemove>
         </template>

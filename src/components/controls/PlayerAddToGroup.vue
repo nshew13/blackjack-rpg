@@ -11,14 +11,15 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update', playerGroups: IPlayerGroup[]): void,
+  (e: 'update:player', player: IPlayer): void,
 }>();
 
 const showDialog = ref<boolean>(false);
 
 
 const addPlayerToGroup = (group: IPlayerGroup) => {
-  group.playerIDs.add(props.player.uuid);
-  emit('update', props.modelValue);
+	props.player.inGroup = group.uuid;
+  emit('update:player', props.player);
 }
 
 const addPlayerToNewGroup = (event: Event, newGroupName: string) => {
@@ -27,10 +28,10 @@ const addPlayerToNewGroup = (event: Event, newGroupName: string) => {
   // create an IPlayerGroup and add to list
   const newGroup: IPlayerGroup = {
     name: newGroupName,
-    playerIDs: new Set(),
     uuid: crypto.randomUUID(),
   };
   props.modelValue.push(newGroup);
+	emit('update', props.modelValue);
 
   addPlayerToGroup(newGroup);
 }
