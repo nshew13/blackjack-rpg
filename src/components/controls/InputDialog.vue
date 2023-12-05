@@ -2,9 +2,11 @@
 import {ref, watchEffect} from 'vue';
 
 const props = withDefaults(defineProps<{
+  fieldLabel?: string,
   showDialog?: boolean,
   startingValue?: string;
 }>(), {
+  fieldLabel: 'Input value',
   showDialog: false,
   startingValue: '',
 });
@@ -14,10 +16,10 @@ const emit = defineEmits<{
   (e: 'update', event: Event, name: string): void,
 }>()
 
-const inputName = ref<string>('');
+const inputField = ref<string>('');
 const showDialog = ref<boolean>(false);
 watchEffect(() => {
-  inputName.value = props.startingValue;
+  inputField.value = props.startingValue;
   showDialog.value = props.showDialog;
 });
 
@@ -28,7 +30,7 @@ const cancel = () => {
 };
 
 const saveChanges = (event: Event) => {
-  emit('update', event, inputName.value);
+  emit('update', event, inputField.value);
   showDialog.value = false
   emit('close');
 }
@@ -36,10 +38,10 @@ const saveChanges = (event: Event) => {
 
 <template>
   <q-dialog v-model="showDialog" width="500">
-    <q-card class="rename-dialog" color="indigo-darken-3">
+    <q-card class="input-dialog" color="indigo-darken-3">
       <q-input
-          v-model="inputName"
-          label="Player name"
+          v-model="inputField"
+          :label="fieldLabel"
           outlined
           :autofocus="true"
           @keyup.enter.stop="saveChanges"
@@ -55,7 +57,7 @@ const saveChanges = (event: Event) => {
 </template>
 
 <style scoped>
-.rename-dialog {
+.input-dialog {
   padding: 30px;
 }
 </style>
