@@ -5,11 +5,13 @@ import type {QBtnDropdown} from 'quasar';
 const props = withDefaults(defineProps<{
   helpText?: string,
   icon?: string,
+  label?: string,
   playerGroups: IPlayerGroup[],
   showAddGroup?: boolean,
 }>(), {
   helpText: '',
   icon: 'groups',
+  label: '',
   showAddGroup: false,
 });
 
@@ -34,13 +36,12 @@ const createGroup = () => {
       color="primary"
       auto-close
       :icon="icon"
-      @mouseenter="($refs.playerGroupDropdown as QBtnDropdown).show()"
+      :label="label"
   >
     <q-tooltip v-if="helpText">{{ helpText }}</q-tooltip>
     <q-list
         class="player-group-list"
         bordered
-        @mouseleave="($refs.playerGroupDropdown as QBtnDropdown).hide()"
     >
       <q-item-label v-if="helpText" class="label">{{ helpText }}</q-item-label>
       <q-item

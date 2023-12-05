@@ -13,7 +13,7 @@ import {PlayingCards} from '@/utilities/PlayingCards';
 import {Session} from '@/utilities/Session';
 import type {IPlayer, IPlayerGroup} from '@/types/IPlayer';
 import type {Ref} from 'vue';
-import type {SessionStore} from '@/utilities/Session';
+// import type {SessionStore} from '@/utilities/Session';
 import type {TCardFacing, TDeck} from '@/utilities/PlayingCards';
 
 type TCardHolderMapRef = Record<string /* IPlayer.uuid */, TDeck>;
@@ -30,7 +30,9 @@ let nextPlayerNumber = 1;
 const drawDeck = ref<TDeck>([]);
 const discardDeck = ref<TDeck>([]);
 const players = ref<IPlayer[]>([]);
+// TODO: fix players in multiple groups
 const playerGroups = ref<IPlayerGroup[]>([]);
+const selectedGroup = ref<IPlayerGroup>();
 
 const hasHouseRevealed = ref<boolean>(false);
 const houseWins = ref<boolean>(false);
@@ -49,6 +51,15 @@ const allPlayersAreFinished = computed((): boolean => {
 
 const allPlayersAreBust = computed((): boolean => {
   return playerHands.value.every(hand => handIsBust(hand));
+});
+
+const enabledPlayers = computed((): Array<IPlayer> => {
+  // do we have groups defined
+  if (playerGroups.value.length > 0 && selectedGroup.value) {
+    return players.value.filter(p => p.enabled);
+  }
+
+  return players.value;
 });
 
 const hasDealtCards = computed((): boolean => {
@@ -72,6 +83,22 @@ const playerHands = computed((): Array<TDeck> => {
 
   return Object.values(playerHandsMap.value);
 });
+
+const sortedPlayers = computed((): Array<IPlayer> => {
+  return players.value.toSorted((a: IPlayer, b: IPlayer) => {
+    if (a.enabled === b.enabled) {
+      // if both enabled, sort by name
+      if (a.name === b.name) {
+        return 0;
+      }
+
+      return a.name < b.name ? -1 : 1;
+    }
+
+    return a.enabled ? -1 : 1;
+  });
+});
+
 
 //
 //
@@ -98,19 +125,39 @@ watch(allPlayersAreFinished, () => {
   }
 });
 
+// switch to first created group
+const stopWatchPlayerGroups = watch(playerGroups, () => {
+  if (playerGroups.value.length === 1) {
+    selectedGroup.value = playerGroups.value[0];
+    stopWatchPlayerGroups();
+  }
+}, { deep: true });
+
+// TODO: animate dis/enabling
+watch(selectedGroup, (newGroup, oldGroup) => {
+  if (newGroup?.uuid && newGroup.uuid !== oldGroup?.uuid) {
+    const group = playerGroups.value.find(g => g.uuid === newGroup.uuid);
+    if (group) {
+      players.value.forEach(player => {
+        player.enabled = group.playerIDs.has(player.uuid);
+      });
+    }
+  }
+});
+
 onBeforeMount(() => {
   // load from saved state
-  const state: SessionStore = Session.loadGameSession();
+  // const state: SessionStore = Session.loadGameSession();
 
   drawDeck.value = state?.drawDeck ?? PlayingCards.shuffleDeck(PlayingCards.generateDeck());
 
-  if (Array.isArray(state?.players)) {
-    // N.B.: Because forEach iterates over the original array, add+save doesn't get stuck in a loop here.
-    state.players.forEach(player => { addPlayer(player, true); });
-  } else {
+  // if (Array.isArray(state?.players)) {
+  //   // N.B.: Because forEach iterates over the original array, add+save doesn't get stuck in a loop here.
+  //   state.players.forEach(player => { addPlayer(player, true); });
+  // } else {
     // No stored players. Create one.
     addPlayer();
-  }
+  // }
 });
 
 //
@@ -128,9 +175,15 @@ const addPlayer = (player?: IPlayer, skipSave = false) => {
   playerHandsMap.value[uuid] = [] as TDeck;
 
   players.value.push({
+    enabled: true,
     name: player?.name ?? `Player ${playerNumber}`,
     uuid,
   });
+
+  // add to selected group, if defined
+  if (selectedGroup.value) {
+    selectedGroup.value.playerIDs.add(uuid)
+  }
 
   if (!skipSave) {
     Session.saveGameSession({
@@ -147,14 +200,14 @@ const dealInitialHands = () => {
   hasHouseRevealed.value = false;
   houseWins.value = false;
 
-  // deal one to each player
-  players.value.forEach(player => { dealToPlayer(player); });
+  // deal one to each enabled player
+  enabledPlayers.value.forEach(player => { dealToPlayer(player); });
 
   // deal House's first card face down
   dealToHouse(true, 'down');
 
   // deal second card to each player
-  players.value.forEach(player => { dealToPlayer(player); });
+  enabledPlayers.value.forEach(player => { dealToPlayer(player); });
 
   // deal House's second card face up
   dealToHouse(true);
@@ -281,8 +334,8 @@ const revealHouseHand = () => {
   hasHouseRevealed.value = true;
 }
 
-const showGroup = (selectedGroup: IPlayerGroup) => {
-  console.log(`TODO: show group ${selectedGroup.name}`);
+const showGroup = (group: IPlayerGroup) => {
+  selectedGroup.value = group;
 };
 
 const splitHand = (player: IPlayer) => {
@@ -321,11 +374,12 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
       <!-- TODO: bulk add to group -->
       <!-- TODO: remove from/change group -->
       <div class="main-actions">
-        <q-btn label="Add Player" @click.stop="() => addPlayer()"></q-btn>
-        <q-btn :label="hasDealtCards ? 'Discard All &amp; Deal' : 'Deal'" @click.stop="dealInitialHands"></q-btn>
-        <q-btn label="Discard All" @click.stop="discardAll" :disabled="!hasDealtCards"></q-btn>
+        <q-btn label="Add Player" icon="person_add" @click.stop="() => addPlayer()"></q-btn>
+        <q-btn :label="hasDealtCards ? 'Discard All &amp; Deal' : 'Deal'" icon="autorenew" @click.stop="dealInitialHands"></q-btn>
+        <q-btn label="Discard All" icon="delete_sweep" @click.stop="discardAll" :disabled="!hasDealtCards"></q-btn>
         <PlayerGroupDropdown
             help-text="Select group to enable"
+            :label="selectedGroup && selectedGroup.name"
             :player-groups="playerGroups"
             @select="showGroup"
         ></PlayerGroupDropdown>
@@ -370,18 +424,19 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
   <!-- TODO: allow swap in/out groups of players -->
       <!-- players -->
       <CardHolder
-          v-for="player in players"
+          v-for="player in sortedPlayers"
           :key="player.uuid"
-          @deal="dealToPlayer(player)"
-          :bust="handIsBust(playerHandsMap[player.uuid])"
           card-size="small"
+          :bust="handIsBust(playerHandsMap[player.uuid])"
+          :disable="!player.enabled"
           :total="PlayingCards.totalHand(playerHandsMap[player.uuid])"
           :win="handWins(playerHandsMap[player.uuid]) || (houseIsBust && !handIsBust(playerHandsMap[player.uuid]))"
+          @deal="dealToPlayer(player)"
       >
         <template #header>
           <PlayerName :player="player" @rename="updatePlayer"></PlayerName>
-          <PlayerAddToGroup :player="player" :player-groups="playerGroups"></PlayerAddToGroup>
-          <PlayerToggle :player="player" is-enabled></PlayerToggle>
+          <PlayerAddToGroup :player="player" v-model="playerGroups"></PlayerAddToGroup>
+          <PlayerToggle :player="player" v-model="player.enabled"></PlayerToggle>
           <PlayerRemove :player="player" :disable="players.length <= 1" @remove="removePlayer"></PlayerRemove>
         </template>
         <template #default="{ cardSize }">

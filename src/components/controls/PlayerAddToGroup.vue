@@ -5,8 +5,8 @@ import PlayerGroupDropdown from '@/components/controls/PlayerGroupDropdown.vue';
 import type {IPlayer, IPlayerGroup} from '@/types/IPlayer';
 
 const props = defineProps<{
+  modelValue: IPlayerGroup[],
   player: IPlayer,
-  playerGroups: IPlayerGroup[],
 }>();
 
 const emit = defineEmits<{
@@ -18,7 +18,7 @@ const showDialog = ref<boolean>(false);
 
 const addPlayerToGroup = (group: IPlayerGroup) => {
   group.playerIDs.add(props.player.uuid);
-  emit('update', props.playerGroups);
+  emit('update', props.modelValue);
 }
 
 const addPlayerToNewGroup = (event: Event, newGroupName: string) => {
@@ -28,8 +28,9 @@ const addPlayerToNewGroup = (event: Event, newGroupName: string) => {
   const newGroup: IPlayerGroup = {
     name: newGroupName,
     playerIDs: new Set(),
+    uuid: crypto.randomUUID(),
   };
-  props.playerGroups.push(newGroup);
+  props.modelValue.push(newGroup);
 
   addPlayerToGroup(newGroup);
 }
@@ -39,7 +40,7 @@ const addPlayerToNewGroup = (event: Event, newGroupName: string) => {
   <InputDialog
       field-label="Group name"
       :show-dialog="showDialog"
-      :starting-value="`Group ${playerGroups.length + 1}`"
+      :starting-value="`Group ${modelValue.length + 1}`"
       @close="showDialog = false"
       @update="addPlayerToNewGroup"
   ></InputDialog>
@@ -47,7 +48,7 @@ const addPlayerToNewGroup = (event: Event, newGroupName: string) => {
   <PlayerGroupDropdown
       help-text="Add player to group"
       icon="group_add"
-      :player-groups="playerGroups"
+      :player-groups="modelValue"
       show-add-group
       @select="addPlayerToGroup"
       @create="showDialog = true"

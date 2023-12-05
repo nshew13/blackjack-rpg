@@ -3,18 +3,17 @@ import {ref, watchEffect} from 'vue';
 import type {IPlayer} from '@/types/IPlayer';
 
 const props = defineProps<{
-  isEnabled: boolean,
+  modelValue: boolean,
 }>();
 
 const emit = defineEmits<{
-  (e: 'toggle', player: IPlayer): void,
+  (e: 'update', enabled: IPlayer['enabled']): void,
 }>();
 
-const internalValue = ref<boolean>();
+const internalValue = ref<boolean>(true);
 watchEffect(() => {
-  internalValue.value = props.isEnabled ?? true;
+  internalValue.value = props.modelValue ?? true;
 });
-
 </script>
 
 <template>
@@ -24,7 +23,7 @@ watchEffect(() => {
       checked-icon="check"
       color="positive"
       unchecked-icon="clear"
-      @update="emit('toggle', internalValue)"
+      @update="emit('update', internalValue)"
   >
     <q-tooltip>
       {{ internalValue ? 'Disable' : 'Enable' }} player

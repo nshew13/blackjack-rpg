@@ -5,6 +5,7 @@ import type {TCardSize} from '@/utilities/PlayingCards';
 const props = withDefaults(defineProps<{
   bust?: boolean,
   cardSize?: TCardSize,
+  disable?: boolean,
   label?: string,
   singleColumn?: boolean,
   total?: number,
@@ -12,6 +13,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   bust: false,
   cardSize: 'large',
+  disable: false,
   label: '',
   singleColumn: false,
   win: false,
@@ -49,7 +51,7 @@ const showTotal = typeof props?.total !== 'undefined';
 </script>
 
 <template>
-  <div class="card-holder" :class="{ 'win': win }">
+  <div class="card-holder" :class="{ 'win': win, 'disable': disable }">
     <div class="header">
       <slot name="header">{{ label }}</slot>
     </div>
@@ -98,6 +100,11 @@ const showTotal = typeof props?.total !== 'undefined';
 
   &.win {
     --color-border: blue; /* TODO: something that stands out, or animate */
+  }
+
+  &.disable {
+    opacity: 0.25;
+    transform: scale(75%);
   }
 
   /* center label and area along vertical axis */
