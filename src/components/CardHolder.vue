@@ -3,49 +3,49 @@ import {computed} from 'vue';
 import type {TCardSize} from '@/utilities/PlayingCards';
 
 const props = withDefaults(defineProps<{
-  bust?: boolean,
-  cardSize?: TCardSize,
-  disable?: boolean,
-  label?: string,
-  singleColumn?: boolean,
-  total?: number,
-  win?: boolean,
+    bust?: boolean,
+    cardSize?: TCardSize,
+    disable?: boolean,
+    label?: string,
+    singleColumn?: boolean,
+    total?: number,
+    win?: boolean,
 }>(), {
-  bust: false,
-  cardSize: 'large',
-  disable: false,
-  label: '',
-  singleColumn: false,
-  win: false,
+    bust: false,
+    cardSize: 'large',
+    disable: false,
+    label: '',
+    singleColumn: false,
+    win: false,
 });
 
 const emit = defineEmits<{
-  (e: 'deal'): void,
+    (e: 'deal'): void,
 }>();
 
 const headerAlign = computed(() => props.singleColumn ? 'center' : 'stretch');
 
 const cardHeight = computed(() => {
-  switch (props.cardSize) {
-    case 'large':
-    default:
-      return '150px';
+    switch (props.cardSize) {
+        case 'large':
+        default:
+            return '150px';
 
-    case 'small':
-      return '90px';
-  }
-})
+        case 'small':
+            return '90px';
+    }
+});
 
 const cardPadding = computed(() => {
-  switch (props.cardSize) {
-    case 'large':
-    default:
-      return '10px';
+    switch (props.cardSize) {
+        case 'large':
+        default:
+            return '10px';
 
-    case 'small':
-      return '0';
-  }
-})
+        case 'small':
+            return '0';
+    }
+});
 
 const showTotal = typeof props?.total !== 'undefined';
 </script>
@@ -61,7 +61,8 @@ const showTotal = typeof props?.total !== 'undefined';
         <slot :card-size="cardSize">
           <!-- expected <Card>(s) or <Deck> -->
         </slot>
-        <svg v-if="bust" class="bust" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+        <svg v-if="bust" class="bust" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
+             viewBox="0 0 100 100">
           <path d="M0 0 L100 100" />
           <path d="M0 100 L100 0" />
         </svg>
@@ -118,6 +119,7 @@ const showTotal = typeof props?.total !== 'undefined';
   color: var(--color-label);
   user-select: none;
 }
+
 .header {
   align-self: v-bind(headerAlign);
 
@@ -128,11 +130,13 @@ const showTotal = typeof props?.total !== 'undefined';
 
   font-size: 16pt;
 }
+
 .card-row {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
 }
+
 .card-area {
   --card-area-padding: 15px;
 
@@ -157,7 +161,7 @@ const showTotal = typeof props?.total !== 'undefined';
    * until they can no longer squeeze and the last slot is taken. After the first
    * row adjusts, subsequent rows are already aligned as needed.
    */
-  grid-template-columns: repeat(auto-fit,  minmax(var(--card-overlap), max-content)) var(--card-width);
+  grid-template-columns: repeat(auto-fit, minmax(var(--card-overlap), max-content)) var(--card-width);
   align-items: center;
   row-gap: var(--card-area-padding);
 
@@ -167,10 +171,10 @@ const showTotal = typeof props?.total !== 'undefined';
   border-radius: var(--card-corner-radius);
 
   width: calc(
-    calc(var(--card-overlap) * var(--cards-overlapping-per-row)) /* each of first X cards overlaps */
-    + var(--card-width) /* final, whole card */
-    + var(--card-area-padding) * 2
-    + var(--area-border-width) * 2
+      calc(var(--card-overlap) * var(--cards-overlapping-per-row))/* each of first X cards overlaps */
+      + var(--card-width)/* final, whole card */
+      + var(--card-area-padding) * 2
+      + var(--area-border-width) * 2
   );
 
   /* start with the height of one card row */
@@ -188,15 +192,18 @@ const showTotal = typeof props?.total !== 'undefined';
   }
 
   /* animate a peek of cards not in a single column */
+
   &:not(.single-column) :deep(.card) {
     transition: transform 250ms;
   }
+
   &:not(.single-column) :deep(.card:hover) {
     z-index: 64;
     /* TODO: adjust angle along arc */
     box-shadow: 0 0 25px 15px goldenrod;
   }
 }
+
 .bust {
   position: absolute;
   stroke: rgba(255, 0, 0, 0.7);
@@ -204,6 +211,7 @@ const showTotal = typeof props?.total !== 'undefined';
   height: 100%;
   width: 100%;
 }
+
 .area-total {
   display: flex;
   flex-direction: column;
@@ -214,6 +222,7 @@ const showTotal = typeof props?.total !== 'undefined';
   min-width: 2em;
   text-align: center;
 }
+
 .total-label {
   font-size: 16pt;
 }

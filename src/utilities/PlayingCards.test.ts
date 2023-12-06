@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest'
+import {describe, it, expect} from 'vitest';
 
-import { PlayingCards } from './PlayingCards'
+import {PlayingCards} from './PlayingCards';
 
 describe('PlayingCards', () => {
     it('generates a deck of 52 cards', () => {
         const deck = PlayingCards.generateDeck();
         expect(deck.length).toBe(52);
-    })
+    });
 
     it('correctly totals two aces', () => {
         const deck = PlayingCards.generateDeck();
@@ -14,7 +14,7 @@ describe('PlayingCards', () => {
         const hand = aces.slice(0, 2);
 
         expect(PlayingCards.totalHand(hand)).toBe(12);
-    })
+    });
 
     it('correctly totals three aces', () => {
         const deck = PlayingCards.generateDeck();
@@ -22,7 +22,7 @@ describe('PlayingCards', () => {
         const hand = aces.slice(0, 3);
 
         expect(PlayingCards.totalHand(hand)).toBe(3);
-    })
+    });
 
     // TODO
     it.skip('evenly shuffles deck', () => {
@@ -33,5 +33,5 @@ describe('PlayingCards', () => {
         // }
 
         expect(deck.length).toBe(52);
-    })
-})
+    });
+});

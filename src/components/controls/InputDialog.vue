@@ -3,38 +3,38 @@ import {ref, watchEffect} from 'vue';
 import {QInput} from 'quasar';
 
 const props = withDefaults(defineProps<{
-  fieldLabel?: string,
-  showDialog?: boolean,
-  startingValue?: string;
+    fieldLabel?: string,
+    showDialog?: boolean,
+    startingValue?: string;
 }>(), {
-  fieldLabel: 'Input value',
-  showDialog: false,
-  startingValue: '',
+    fieldLabel: 'Input value',
+    showDialog: false,
+    startingValue: '',
 });
 
 const emit = defineEmits<{
-  (e: 'close'): void,
-  (e: 'update', event: Event, name: string): void,
+    (e: 'close'): void,
+    (e: 'update', event: Event, name: string): void,
 }>();
 
 const inputField = ref<string>('');
 const showDialog = ref<boolean>(false);
 watchEffect(() => {
-  inputField.value = props.startingValue;
-  showDialog.value = props.showDialog;
+    inputField.value = props.startingValue;
+    showDialog.value = props.showDialog;
 });
 
 
 const cancel = () => {
-  showDialog.value = false
-  emit('close');
+    showDialog.value = false;
+    emit('close');
 };
 
 const saveChanges = (event: Event) => {
-  emit('update', event, inputField.value);
-  showDialog.value = false
-  emit('close');
-}
+    emit('update', event, inputField.value);
+    showDialog.value = false;
+    emit('close');
+};
 </script>
 
 <template>

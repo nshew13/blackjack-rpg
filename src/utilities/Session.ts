@@ -25,7 +25,7 @@ export class Session {
         Session.state = {
             ...Session.state,
             ...kvPairs,
-        }
+        };
         localStorage.setItem(Session.STORAGE_NAME, JSON.stringify(Session.state));
         return Session.state;
     }

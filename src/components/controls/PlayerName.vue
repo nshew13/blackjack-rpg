@@ -4,36 +4,36 @@ import type {IPlayer} from '@/types/IPlayer';
 import type {QInput} from 'quasar';
 
 const props = defineProps<{
-  player: IPlayer,
+    player: IPlayer,
 }>();
 
 const emit = defineEmits<{
-  (e: 'rename', updatedPlayer: IPlayer): void,
+    (e: 'rename', updatedPlayer: IPlayer): void,
 }>();
 
-const errorMessage = ref('')
+const errorMessage = ref('');
 const inputName = ref<string>('');
 watchEffect(() => {
-  inputName.value = props.player.name;
+    inputName.value = props.player.name;
 });
 
 const validatePlayerName = (updatedName?: string) => {
-  if (updatedName) {
-    errorMessage.value = '';
+    if (updatedName) {
+        errorMessage.value = '';
 
-    if (updatedName === '') {
-      errorMessage.value = 'Name can\'t be empty.';
-      return false;
+        if (updatedName === '') {
+            errorMessage.value = 'Name can\'t be empty.';
+            return false;
+        }
     }
-  }
 
-  return true;
+    return true;
 };
 
 const setPlayerName = (updatedName: string) => {
-  const updatedPlayer = JSON.parse(JSON.stringify(props.player));
-  updatedPlayer.name = updatedName;
-  emit('rename', updatedPlayer);
+    const updatedPlayer = JSON.parse(JSON.stringify(props.player));
+    updatedPlayer.name = updatedName;
+    emit('rename', updatedPlayer);
 };
 </script>
 

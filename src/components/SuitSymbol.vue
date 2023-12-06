@@ -3,8 +3,8 @@ import {PlayingCards} from '@/utilities/PlayingCards';
 import type {TCardSuit} from '@/utilities/PlayingCards';
 
 const props = defineProps<{
-  suit: TCardSuit,
-}>()
+    suit: TCardSuit,
+}>();
 </script>
 
 <template>

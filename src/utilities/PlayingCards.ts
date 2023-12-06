@@ -13,6 +13,7 @@ export interface ICard {
     suit: TCardSuit;
     value: TCardValue;
 }
+
 export type TDeck = ICard[];
 
 interface IParamsGenerateDeck {
@@ -45,7 +46,7 @@ export class PlayingCards {
                     suit,
                     value,
                 });
-            })
+            });
         });
 
         return JSON.parse(JSON.stringify(deck));
@@ -83,7 +84,7 @@ export class PlayingCards {
         }
     }
 
-   static getColor(suit: TCardSuit): TCardColor {
+    static getColor(suit: TCardSuit): TCardColor {
         return suit === ('hearts' || 'diamonds') ? 'red' : 'black';
     }
 
@@ -160,7 +161,7 @@ export class PlayingCards {
             (total, card) => {
                 return total + this.getCardValue(card, { hand });
             },
-            0
+            0,
         );
     }
 }

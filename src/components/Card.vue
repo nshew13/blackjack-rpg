@@ -5,56 +5,56 @@ import SuitSymbol from '@/components/SuitSymbol.vue';
 import type {ICard, TCardSize} from '@/utilities/PlayingCards';
 
 const props = withDefaults(defineProps<{
-  card: ICard,
-  cardSize?: TCardSize,
-  randomLayout?: boolean
+    card: ICard,
+    cardSize?: TCardSize,
+    randomLayout?: boolean
 }>(), {
-  cardSize: 'large',
-  randomLayout: false,
+    cardSize: 'large',
+    randomLayout: false,
 });
 
 const emit = defineEmits<{
-  (e: 'card-reveal'): void
-}>()
+    (e: 'card-reveal'): void
+}>();
 
 
 const isFaceUp = computed(() => props.card.facing === 'up');
 
 const getStyle = computed(() => {
-  const styles: Record<string, string> = {
-    'color': PlayingCards.getColor(props.card.suit),  // TODO: this gives away color in markup
-  };
-  if (props.randomLayout) {
-    styles.transform = `translateY(${randomOffset}px) rotate(${randomAngle}deg)`;
-  }
+    const styles: Record<string, string> = {
+        'color': PlayingCards.getColor(props.card.suit),  // TODO: this gives away color in markup
+    };
+    if (props.randomLayout) {
+        styles.transform = `translateY(${randomOffset}px) rotate(${randomAngle}deg)`;
+    }
 
-  return styles;
+    return styles;
 });
 
 const cardClasses = computed(() => {
-  return [
-    { 'face-down': !isFaceUp.value },
-    props.cardSize,
-  ];
+    return [
+        { 'face-down': !isFaceUp.value },
+        props.cardSize,
+    ];
 });
 
 const faceClasses = computed(() => {
-  if (props.cardSize === 'large') {
-    return 'corner top-left';
-  }
+    if (props.cardSize === 'large') {
+        return 'corner top-left';
+    }
 
-  return 'marker';
+    return 'marker';
 });
 
 const randomAngle = Math.floor((Math.random() - 0.5) * 10);
 const randomOffset = Math.floor((Math.random() - 0.5) * 10);
 
 const flipCardUp = () => {
-  if (props.card.facing === 'down') {
-    emit('card-reveal');
-  }
-  props.card.facing = 'up';
-}
+    if (props.card.facing === 'down') {
+        emit('card-reveal');
+    }
+    props.card.facing = 'up';
+};
 </script>
 
 <template>
@@ -66,10 +66,12 @@ const flipCardUp = () => {
   >
     <template v-if="isFaceUp">
       <div :class="faceClasses">
-        {{ props.card.value }} <SuitSymbol :suit="props.card.suit"></SuitSymbol>
+        {{ props.card.value }}
+        <SuitSymbol :suit="props.card.suit"></SuitSymbol>
       </div>
       <div v-if="cardSize === 'large'" class="corner bottom-right">
-        {{ props.card.value }} <SuitSymbol :suit="props.card.suit"></SuitSymbol>
+        {{ props.card.value }}
+        <SuitSymbol :suit="props.card.suit"></SuitSymbol>
       </div>
     </template>
   </div>
@@ -105,10 +107,11 @@ const flipCardUp = () => {
   box-shadow: 0 0 5px black;
 
   &.face-down {
-    background: rgb(2,0,36);
-    background: radial-gradient(circle, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 9%, rgba(0,212,255,1) 32%, rgba(9,9,121,1) 100%);
+    background: rgb(2, 0, 36);
+    background: radial-gradient(circle, rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 9%, rgba(0, 212, 255, 1) 32%, rgba(9, 9, 121, 1) 100%);
   }
 }
+
 .corner {
   position: absolute;
 

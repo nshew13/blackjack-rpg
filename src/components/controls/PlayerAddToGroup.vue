@@ -5,36 +5,36 @@ import PlayerGroupDropdown from '@/components/controls/PlayerGroupDropdown.vue';
 import type {IPlayer, IPlayerGroup} from '@/types/IPlayer';
 
 const props = defineProps<{
-  modelValue: IPlayerGroup[],
-  player: IPlayer,
+    modelValue: IPlayerGroup[],
+    player: IPlayer,
 }>();
 
 const emit = defineEmits<{
-  (e: 'update', playerGroups: IPlayerGroup[]): void,
-  (e: 'update:player', player: IPlayer): void,
+    (e: 'update', playerGroups: IPlayerGroup[]): void,
+    (e: 'update:player', player: IPlayer): void,
 }>();
 
 const showDialog = ref<boolean>(false);
 
 
 const addPlayerToGroup = (group: IPlayerGroup) => {
-	props.player.inGroup = group.uuid;
-  emit('update:player', props.player);
-}
+    props.player.inGroup = group.uuid;
+    emit('update:player', props.player);
+};
 
 const addPlayerToNewGroup = (event: Event, newGroupName: string) => {
-  showDialog.value = false;
+    showDialog.value = false;
 
-  // create an IPlayerGroup and add to list
-  const newGroup: IPlayerGroup = {
-    name: newGroupName,
-    uuid: crypto.randomUUID(),
-  };
-  props.modelValue.push(newGroup);
-	emit('update', props.modelValue);
+    // create an IPlayerGroup and add to list
+    const newGroup: IPlayerGroup = {
+        name: newGroupName,
+        uuid: crypto.randomUUID(),
+    };
+    props.modelValue.push(newGroup);
+    emit('update', props.modelValue);
 
-  addPlayerToGroup(newGroup);
-}
+    addPlayerToGroup(newGroup);
+};
 </script>
 
 <template>
