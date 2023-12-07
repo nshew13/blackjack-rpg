@@ -108,7 +108,6 @@ const sortedPlayers = computed((): Array<IPlayer> => {
 // WATCHES and LIFECYCLE HOOKS
 //
 
-// TODO: combine into watchEffect?
 watch(allPlayersAreBust, () => {
     if (allPlayersAreBust.value) {
         houseWins.value = true;
@@ -128,13 +127,13 @@ watch(allPlayersAreFinished, () => {
     }
 });
 
-// switch to first created group
-const stopWatchPlayerGroups = watch(playerGroups, () => {
-    if (playerGroups.value.length === 1) {
-        selectedGroupID.value = playerGroups.value[0].uuid;
-        stopWatchPlayerGroups();
+// switch to just-created group
+watch(() => playerGroups.value.length, (newLength, oldLength) => {
+    if (newLength > oldLength ?? 0) {
+        const newestGroup = playerGroups.value[newLength - 1];
+        selectedGroupID.value = newestGroup.uuid;
     }
-}, { deep: true });
+});
 
 // TODO: animate dis/enabling
 watch(selectedGroupID, (newGroupID, oldGroupID) => {
@@ -149,7 +148,7 @@ onBeforeMount(() => {
     // load from saved state
     // const state: SessionStore = Session.loadGameSession();
 
-  drawDeck.value = state?.drawDeck ?? PlayingCards.shuffleDeck(PlayingCards.generateDeck());
+    drawDeck.value = /*state?.drawDeck ??*/ PlayingCards.shuffleDeck(PlayingCards.generateDeck());
 
     // if (Array.isArray(state?.players)) {
     //   // N.B.: Because forEach iterates over the original array, add+save doesn't get stuck in a loop here.
@@ -239,7 +238,7 @@ const dealTo = (hand: TDeck, facing: TCardFacing = 'up') => {
         hand.push(nextCard);
         nextCard.facing = facing;
     } else {
-        // TODO: reshuffle and continue
+        throw new Error('Insufficient cards.');
     }
 
     Session.saveGameSession({ 'drawDeck': drawDeck.value });
@@ -369,13 +368,13 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
       <CardHolder label="Draw" class="draw-deck" single-column>
         <Deck :cards="drawDeck" @reshuffle="reshuffleDrawDeck"></Deck>
 
-        <template #actions v-if="drawDeck.length <= 0">
-          <q-btn label="Shuffle" @click.stop="reshuffleDrawDeck"></q-btn>
+        <template #actions>
+          <div class="draw-deck-count">{{ drawDeck.length }} remaining</div>
+          <q-btn v-if="drawDeck.length <= 0" label="Shuffle" @click.stop="reshuffleDrawDeck"></q-btn>
         </template>
       </CardHolder>
 
       <!-- TODO: bulk add to group -->
-      <!-- TODO: remove from/change group -->
       <div class="main-actions">
         <q-btn label="Add Player" icon="person_add" @click.stop="() => addPlayer()"></q-btn>
         <q-btn :label="hasDealtCards ? 'Discard All &amp; Deal' : 'Deal'" icon="autorenew" @click.stop="dealInitialHands"></q-btn>
@@ -424,7 +423,6 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
 
       <!-- TODO: allow d&d sorting -->
       <!-- TODO: allow pinning -->
-      <!-- TODO: allow swap in/out groups of players -->
       <!-- players -->
       <CardHolder
           v-for="player in sortedPlayers"
@@ -484,6 +482,8 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  margin-bottom: 2em;
 }
 
 .main-actions {

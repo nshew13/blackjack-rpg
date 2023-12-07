@@ -38,7 +38,11 @@ const setPlayerName = (updatedName: string) => {
 </script>
 
 <template>
-  <div class="player-name">{{ player.name }}</div>
+  <div class="player-name">
+    {{ player.name }}
+    <q-icon class="edit-icon" name="edit"></q-icon>
+  </div>
+
   <q-popup-edit
       v-model.trim="inputName"
       auto-save
@@ -65,9 +69,20 @@ const setPlayerName = (updatedName: string) => {
 
 <style scoped>
 .player-name {
-  cursor: text;
+  cursor: pointer;
 
   overflow-x: clip;
   text-overflow: ellipsis;
 }
+
+.edit-icon {
+  visibility: hidden;
+  font-size: 90%;
+  opacity: 0.75;
+}
+
+.player-name:hover .edit-icon {
+  visibility: visible;
+}
+
 </style>

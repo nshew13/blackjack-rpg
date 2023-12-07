@@ -6,39 +6,53 @@ and [Starship Infernum](https://www.wicked-clever.com/our-games/starship-infernu
 
 ## Use
 
-Simply download the [`index.html`](./dist/index.html) file from the `dist` folder. It
-contains all the code.
+Simply download the [`index.html`](./dist/index.html) file from the `dist` folder and open it
+in your browser. It contains all the code.
 
-### Technical stuff
+### How to play
 
-Normally, the build process would output separate JS and/or CSS files. When trying to
-open the `index.html` file locally, browsers give CORS errors about loading from `file://`.
+Add players as needed*. Click on the player name to change it.
 
-Instead, these files are in-lined using the
-[vite-plugin-singlefile](https://github.com/richardtallent/vite-plugin-singlefile) plugin
-for Vite, meaning no file requests are needed.
+Click "Deal" to deal all active players and the House two cards. The House hand will reveal a
+blackjack, if dealt.
+
+Click on player hands to deal individual cards ("hit me"), then click "Stay" to prevent further hits.
+
+The House hand stays at 17 and will automatically play out when all players have stayed.
+You may also click "Finish Hand" to conclude the round. Click on the House hand to "hit" will warn
+you if player hands are still active.
+
+Toggle individual players out of rounds, or assign players to groups to quickly switch between parties.
+
+
+*There is no limit imposed on the number of players the game will support, though a deck of 52 cards
+can only support so many concurrent blackjack players.
 
 ## Development
 
-To develop and build locally, you will need pnpm, yarn, npm, etc.
+See the [Technical Stuff](./tech.md).
 
-### Project Setup
+## To-do
 
-With a package manage installed and this code downloaded, change to the project's
-root directory and install its dependencies.
+### General
+- [ ] split hand
+- [ ] configure theme/palette
+- [ ] add configuration, including
+  - [ ] number of decks
+  - [ ] hand card size (large or small)
+  - [ ] deck includes Jokers
+- [ ] bulk add to group
+- [ ] animate cards
+- [ ] animate player dis/enabling (group change)
+- [ ] add unit test for shuffling
+- [ ] save/resume play state
+  - [ ] config
+  - [ ] cards in each deck
+  - [ ] cards in hands?
+  - [ ] player setup (names, groups)
 
-```sh
-pnpm install
-```
-
-The live dev server is available with `pnpm dev`.
-
-### Technical stuff
-
-This project uses the following technologies:
-
-* TypeScript
-* Vue 3
-* Quasar
-* Vite
-* Vitest
+### Game-specific
+- [ ] separate draw deck for game randomization (i.e., one to build the world, the other for player skill checks)
+- [ ] add +/- values to player hands (e.g., skill use)
+- [ ] auto re-deal with +1 card for players that lose without bust ("rising tension")
+- [ ] bust tracker
