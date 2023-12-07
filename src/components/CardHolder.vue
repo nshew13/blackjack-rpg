@@ -53,6 +53,7 @@ const showTotal = typeof props?.total !== 'undefined';
 <template>
   <div class="card-holder" :class="{ 'win': win, 'disable': disable }">
     <div class="header">
+      <q-avatar v-if="win" icon="verified" color="white" text-color="black"></q-avatar>
       <slot name="header">{{ label }}</slot>
     </div>
 
@@ -67,6 +68,7 @@ const showTotal = typeof props?.total !== 'undefined';
           <path d="M0 100 L100 0" />
         </svg>
       </div>
+
       <div v-if="showTotal" class="area-total">
         <span class="total-label">Total</span>
         <span>{{ total && total < 0 ? '--' : total }}</span>
@@ -100,7 +102,8 @@ const showTotal = typeof props?.total !== 'undefined';
   --card-holder-width: calc(350px + var(--card-width) + var(--area-border-width) * 2);
 
   &.win {
-    --color-border: blue; /* TODO: something that stands out, or animate */
+    --color-border: white; /* TODO: something that stands out, or animate */
+    --color-label: white;
   }
 
   &.disable {

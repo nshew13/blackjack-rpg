@@ -16,10 +16,11 @@ import type {Ref} from 'vue';
 // import type {SessionStore} from '@/utilities/Session';
 import type {TCardFacing, TDeck} from '@/utilities/PlayingCards';
 
-type TCardHolderMapRef = Record<string /* IPlayer.uuid */, TDeck>;
+type TCardHolderMap = Record<string /* IPlayer.uuid */, TDeck>;
+type TPlayerID = IPlayer['uuid'];
 
 
-const HOUSE_STAYS = 17;
+const HOUSE_STANDS = 17;
 let nextPlayerNumber = 1;
 
 //
@@ -36,16 +37,21 @@ const selectedGroupID = ref<IPlayerGroup['uuid']>();
 const hasHouseRevealed = ref<boolean>(false);
 const houseWins = ref<boolean>(false);
 const showConfirmHouse = ref<boolean>(false);
-const stayedPlayerIDs = ref<string[]>([]);
+
+const standingPlayerIDs = ref<TPlayerID[]>([]);
+const blackjackPlayerIDs = ref<TPlayerID[]>([]);
+const bustedPlayerIDs = ref<TPlayerID[]>([]);
+const winningPlayerIDs = ref<TPlayerID[]>([]);
+
 
 /**
  * a reactive map of player UUIDs to TDecks
  */
-const playerHandsMap: Ref<TCardHolderMapRef> = ref({});
+const playerHandsMap: Ref<TCardHolderMap> = ref({});
 const houseHand: Ref<TDeck> = ref([]);
 
 const allPlayersAreFinished = computed((): boolean => {
-    return stayedPlayerIDs.value.length + playerHands.value.filter(hand => handIsBust(hand)).length === playerHands.value.length;
+    return standingPlayerIDs.value.length + playerHands.value.filter(hand => handIsBust(hand)).length === playerHands.value.length;
 });
 
 const allPlayersAreBust = computed((): boolean => {
@@ -66,6 +72,7 @@ const hasDealtCards = computed((): boolean => {
         return true;
     }
 
+    // TODO: check all enabled instead of some of all
     return playerHands.value.some(hand => hand.length > 0);
 });
 
@@ -108,6 +115,34 @@ const sortedPlayers = computed((): Array<IPlayer> => {
 // WATCHES and LIFECYCLE HOOKS
 //
 
+// watch all player hands for status changes (blackjack, win, bust)
+// house hands have computed values
+watch([playerHandsMap, hasHouseRevealed], () => {
+    // short-circuit if House has blackjack
+    if (houseHasBlackjack.value || houseIsBust.value) {
+        return;
+    }
+
+    Object.keys(playerHandsMap.value).forEach(playerID => {
+        const hand = playerHandsMap.value[playerID]; // shortcut
+
+        // only consider ready hands
+        if (hand.length >= 2) {
+            if (handIsBust(hand)) {
+                bustedPlayerIDs.value.push(playerID);
+            } else if (handWins(hand)) { // includes blackjack
+                winningPlayerIDs.value.push(playerID);
+
+                // subset of wins
+                if (PlayingCards.hasBlackjack(hand)) {
+                    blackjackPlayerIDs.value.push(playerID);
+                    standingPlayerIDs.value.push(playerID);
+                }
+            }
+        }
+    });
+}, { deep: true });
+
 watch(allPlayersAreBust, () => {
     if (allPlayersAreBust.value) {
         houseWins.value = true;
@@ -115,8 +150,8 @@ watch(allPlayersAreBust, () => {
     }
 });
 
-watch(stayedPlayerIDs, () => {
-    if (stayedPlayerIDs.value.length === playerHands.value.length) {
+watch(standingPlayerIDs, () => {
+    if (standingPlayerIDs.value.length === playerHands.value.length) {
         completeHouseHand();
     }
 }, { deep: true });
@@ -227,6 +262,7 @@ const dealTo = (hand: TDeck, facing: TCardFacing = 'up') => {
         reshuffleDrawDeck();
     }
 
+    // TODO: is this necessary?
     if (handIsBust(hand)) {
         console.log('Hand is bust. I cannot even deal.');
         return;
@@ -249,7 +285,7 @@ const dealToHouse = (skipWarning = false, facing: TCardFacing = 'up') => {
         // warn before revealing
         // TODO: make this optional/configurable
         showConfirmHouse.value = true;
-    } else {
+    } else if (!houseWins.value) {
         dealTo(houseHand.value, facing);
     }
 };
@@ -257,7 +293,7 @@ const dealToHouse = (skipWarning = false, facing: TCardFacing = 'up') => {
 // TODO: add turn over animation
 // TODO: add movement to card holder (hand)
 const dealToPlayer = (player: IPlayer) => {
-    if (stayedPlayerIDs.value.includes(player.uuid)) {
+    if (standingPlayerIDs.value.includes(player.uuid) || hasHouseRevealed.value) {
         return;
     }
 
@@ -268,7 +304,10 @@ const dealToPlayer = (player: IPlayer) => {
 const discardAll = () => {
     discardHand(houseHand.value);
     playerHands.value.forEach(hand => discardHand(hand));
-    stayedPlayerIDs.value.length = 0;
+    standingPlayerIDs.value.length = 0;
+    blackjackPlayerIDs.value.length = 0;
+    bustedPlayerIDs.value.length = 0;
+    winningPlayerIDs.value.length = 0;
 };
 
 const discardHand = (hand: TDeck) => {
@@ -279,7 +318,7 @@ const discardHand = (hand: TDeck) => {
 const completeHouseHand = () => {
     if (!hasHouseRevealed.value) {
         revealHouseHand();
-        while (houseTotal.value < HOUSE_STAYS) {
+        while (houseTotal.value < HOUSE_STANDS) {
             dealToHouse();
         }
         // TODO: compare scores to see if house wins
@@ -288,7 +327,6 @@ const completeHouseHand = () => {
 
 const handIsBust = (hand: TDeck): boolean => PlayingCards.totalHand(hand) > 21;
 
-// TODO: should player w/BJ automatically stay?
 const handWins = (hand: TDeck): boolean => {
     if (hasHouseRevealed.value) {
         const handTotal = PlayingCards.totalHand(hand);
@@ -343,14 +381,14 @@ const splitHand = (player: IPlayer) => {
     console.log(`TODO: split hand for ${player.name}`);
 };
 
-const stayPlayer = (player: IPlayer) => {
-    stayedPlayerIDs.value.push(player.uuid);
+const standPlayer = (player: IPlayer) => {
+    standingPlayerIDs.value.push(player.uuid);
 };
 
 const updatePlayer = (updatedPlayer: IPlayer) => {
-    console.log('updated player', JSON.parse(JSON.stringify(updatedPlayer)));
+    console.log('updated player', structuredClone(updatedPlayer));
     const playerIndex = players.value.findIndex(p => p.uuid === updatedPlayer.uuid);
-    players.value[playerIndex] = JSON.parse(JSON.stringify(updatedPlayer));
+    players.value[playerIndex] = structuredClone(updatedPlayer);
     Session.saveGameSession({ 'players': players.value });
 };
 </script>
@@ -396,11 +434,12 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
       <!-- House -->
       <CardHolder
           @deal="dealToHouse"
-          :bust="handIsBust(houseHand)"
+          :bust="houseIsBust"
           card-size="small"
           :total="hasHouseRevealed ? PlayingCards.totalHand(houseHand) : -1"
           :win="houseHasBlackjack || houseWins"
       >
+        <!-- TODO: win isn't always working -->
         <template #header>
           <div class="player-name">House</div>
           <q-btn
@@ -428,10 +467,10 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
           v-for="player in sortedPlayers"
           :key="player.uuid"
           card-size="small"
-          :bust="handIsBust(playerHandsMap[player.uuid])"
+          :bust="bustedPlayerIDs.includes(player.uuid)"
           :disable="!player.enabled"
           :total="PlayingCards.totalHand(playerHandsMap[player.uuid])"
-          :win="handWins(playerHandsMap[player.uuid]) || (houseIsBust && !handIsBust(playerHandsMap[player.uuid]))"
+          :win="winningPlayerIDs.includes(player.uuid)"
           @deal="dealToPlayer(player)"
       >
         <template #header>
@@ -450,9 +489,9 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
           ></Card>
         </template>
         <template #side>
-          <div class="stay">
-            <q-btn v-if="!stayedPlayerIDs.includes(player.uuid)" label="Stay" @click.stop="stayPlayer(player)"></q-btn>
-            <q-icon v-else class="stay-icon" name="front_hand" color="red"></q-icon>
+          <div class="stand">
+            <q-btn v-if="!standingPlayerIDs.includes(player.uuid)" label="Stand" @click.stop="standPlayer(player)"></q-btn>
+            <q-icon v-else class="stand-icon" name="front_hand" color="red"></q-icon>
           </div>
           <q-btn
               v-if="isEligibleForSplit(playerHandsMap[player.uuid])"
@@ -505,11 +544,11 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
   flex: 1 0 0;
 }
 
-.stay {
+.stand {
   min-height: 54px; /* accommodate small icon */
 }
 
-.stay > * {
+.stand > * {
   display: inline;
 }
 </style>

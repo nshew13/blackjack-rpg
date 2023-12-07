@@ -31,7 +31,7 @@ const validatePlayerName = (updatedName?: string) => {
 };
 
 const setPlayerName = (updatedName: string) => {
-    const updatedPlayer = JSON.parse(JSON.stringify(props.player));
+    const updatedPlayer = structuredClone(props.player);
     updatedPlayer.name = updatedName;
     emit('rename', updatedPlayer);
 };

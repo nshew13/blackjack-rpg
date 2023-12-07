@@ -16,9 +16,9 @@ Add players as needed*. Click on the player name to change it.
 Click "Deal" to deal all active players and the House two cards. The House hand will reveal a
 blackjack, if dealt.
 
-Click on player hands to deal individual cards ("hit me"), then click "Stay" to prevent further hits.
+Click on player hands to deal individual cards ("hit me"), then click "Stand" to prevent further hits.
 
-The House hand stays at 17 and will automatically play out when all players have stayed.
+The House hand stands at 17 and will automatically play out when all players are standing.
 You may also click "Finish Hand" to conclude the round. Click on the House hand to "hit" will warn
 you if player hands are still active.
 

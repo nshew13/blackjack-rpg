@@ -49,7 +49,7 @@ export class PlayingCards {
             });
         });
 
-        return JSON.parse(JSON.stringify(deck));
+        return structuredClone(deck);
     }
 
     static getCardID(card: ICard): string {
@@ -68,7 +68,12 @@ export class PlayingCards {
                     // Find all the aces in the hand. Only the first one counts as 11.
                     const aces = params.hand.filter(card => card.value === 'A');
 
-                    if (card === aces[0]) {
+                    // TODO: Aces are player's choice, not automatically 1 or 11, unless forced into a 1 to avoid bust (hard hand)
+
+                    // TODO: this won't work with multiple decks (e.g., both cards could be Ace of Spades)
+                    //       cards will likely need IDs (or include deck IDs)
+                    if (card.suit === aces[0].suit) {
+                        console.log('ace counts as 11');
                         return 11;
                     }
                 }
@@ -137,7 +142,7 @@ export class PlayingCards {
      * @param deck
      */
     static shuffleDeck(deck: TDeck): TDeck {
-        const copiedDeck = JSON.parse(JSON.stringify(deck));
+        const copiedDeck = structuredClone(deck);
         let countUnshuffled = copiedDeck.length;
 
         while (countUnshuffled) {
