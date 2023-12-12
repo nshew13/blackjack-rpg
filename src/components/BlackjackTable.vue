@@ -136,6 +136,9 @@ watch([playerHandsMap, hasHouseRevealed], () => {
              * hasBlackjack is a subset of handWins, but handWins
              * isn't calculated until hasHouseRevealed. Instead,
              * consider it separately.
+             *
+             * Players with a blackjack will not show as winners
+             * until the house reveals.
              */
             if (PlayingCards.hasBlackjack(hand)) {
                 console.log('hand has blackjack', players.find(p => p.uuid === playerID)?.name);

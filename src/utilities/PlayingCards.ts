@@ -150,9 +150,13 @@ export class PlayingCards {
      * See also, https://blog.codinghorror.com/the-danger-of-naivete/.
      *
      * @param deck
+     * @param facing of all cards in shuffled deck
      */
-    static shuffleDeck(deck: TDeck): TDeck {
-        const copiedDeck = structuredClone(deck);
+    static shuffleDeck(deck: TDeck, facing: TCardFacing = 'down'): TDeck {
+        const copiedDeck = structuredClone(deck).map((card: ICard) => {
+            card.facing = facing;
+            return card;
+        });
         let countUnshuffled = copiedDeck.length;
 
         while (countUnshuffled) {
