@@ -33,7 +33,7 @@ export class PlayingCards {
         const {
             facing = 'down',
             // numJokers = 0,
-            // numDecks = 1,
+            numDecks = 1,
         } = params;
 
 
@@ -42,18 +42,28 @@ export class PlayingCards {
             Values.forEach(value => {
                 deck.push({
                     facing,
-                    id: `${suit}-${value}`,
+                    id: 'INCOMPLETE',
                     suit,
                     value,
                 });
             });
         });
 
-        return structuredClone(deck);
-    }
+        // https://stackoverflow.com/q/50672126/356016
+        // const decks = Array.from({ length: numDecks }, () => deck).flat();
+        // const decks = Array(numDecks).fill(deck).flat();
 
-    static getCardID(card: ICard): string {
-        return `${card.suit}-${card.value}`;
+        let decks: TDeck = [];
+        for (let i = 1; i <= numDecks; i++) {
+            const clonedDeck: TDeck = structuredClone(deck).map((card: ICard) => {
+                card.id = PlayingCards.generateCardID(card, i);
+                return card;
+            });
+
+            decks = decks.concat(...clonedDeck);
+        }
+
+        return structuredClone(decks);
     }
 
     // TODO: allow config for rules (e.g., facecard = 10, A = 1 or 11)
@@ -168,5 +178,14 @@ export class PlayingCards {
             },
             0,
         );
+    }
+
+    private static generateCardID(card: ICard, deckNumber = 1): string {
+        /*
+         * JavaScript (or Vue?) sees the cards as identical (same pointer)
+         * when their IDs are the same, so we must include the deck number
+         * when suit-value pairs will appear more than once.
+         */
+        return `d${deckNumber}-${card.suit}-${card.value}`;
     }
 }

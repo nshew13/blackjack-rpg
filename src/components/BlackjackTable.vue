@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import {computed, onBeforeMount, ref, watch} from 'vue';
+import {computed, onBeforeMount, reactive, ref, shallowReactive, watch} from 'vue';
+import {toRawDeep} from '@/utilities/toRawDeep';
 import Card from '@/components/Card.vue';
 import CardHolder from '@/components/CardHolder.vue';
 import ConfirmationDialog from '@/components/controls/ConfirmationDialog.vue';
@@ -28,20 +29,20 @@ let nextPlayerNumber = 1;
 // REF and COMPUTED
 //
 
-const drawDeck = ref<TDeck>([]);
-const discardDeck = ref<TDeck>([]);
-const players = ref<IPlayer[]>([]);
-const playerGroups = ref<IPlayerGroup[]>([]);
-const selectedGroupID = ref<IPlayerGroup['uuid']>();
+const drawDeck = reactive<TDeck>([]);
+const discardDeck = reactive<TDeck>([]);
+const players = reactive<IPlayer[]>([]);
+const playerGroups = reactive<IPlayerGroup[]>([]);
 
+const selectedGroupID = ref<IPlayerGroup['uuid']>();
 const hasHouseRevealed = ref<boolean>(false);
 const houseWins = ref<boolean>(false);
 const showConfirmHouse = ref<boolean>(false);
 
-const standingPlayerIDs = ref<TPlayerID[]>([]);
-const blackjackPlayerIDs = ref<TPlayerID[]>([]);
-const bustedPlayerIDs = ref<TPlayerID[]>([]);
-const winningPlayerIDs = ref<TPlayerID[]>([]);
+const standingPlayerIDs = shallowReactive<TPlayerID[]>([]);
+const blackjackPlayerIDs = shallowReactive<TPlayerID[]>([]);
+const bustedPlayerIDs = shallowReactive<TPlayerID[]>([]);
+const winningPlayerIDs = shallowReactive<TPlayerID[]>([]);
 
 
 /**
@@ -50,8 +51,9 @@ const winningPlayerIDs = ref<TPlayerID[]>([]);
 const playerHandsMap: Ref<TCardHolderMap> = ref({});
 const houseHand: Ref<TDeck> = ref([]);
 
+// TODO: this is including disabled players (house doesn't auto-finish, players don't show wins)
 const allPlayersAreFinished = computed((): boolean => {
-    return standingPlayerIDs.value.length + playerHands.value.filter(hand => handIsBust(hand)).length === playerHands.value.length;
+    return standingPlayerIDs.length + playerHands.value.filter(hand => handIsBust(hand)).length === playerHands.value.length;
 });
 
 const allPlayersAreBust = computed((): boolean => {
@@ -60,11 +62,11 @@ const allPlayersAreBust = computed((): boolean => {
 
 const enabledPlayers = computed((): Array<IPlayer> => {
     // do we have groups defined
-    if (playerGroups.value.length > 0 && selectedGroupID.value) {
-        return players.value.filter(p => p.enabled);
+    if (playerGroups.length > 0 && selectedGroupID.value) {
+        return players.filter(p => p.enabled);
     }
 
-    return players.value;
+    return players;
 });
 
 const hasDealtCards = computed((): boolean => {
@@ -91,11 +93,11 @@ const playerHands = computed((): Array<TDeck> => {
 });
 
 const selectedGroup = computed((): IPlayerGroup | undefined => {
-    return playerGroups.value.find(g => g.uuid === selectedGroupID.value);
+    return playerGroups.find(g => g.uuid === selectedGroupID.value);
 });
 
 const sortedPlayers = computed((): Array<IPlayer> => {
-    return players.value.toSorted((a: IPlayer, b: IPlayer) => {
+    return players.toSorted((a: IPlayer, b: IPlayer) => {
         if (a.enabled === b.enabled) {
             // if both enabled, sort by name
             if (a.name === b.name) {
@@ -118,8 +120,10 @@ const sortedPlayers = computed((): Array<IPlayer> => {
 // watch all player hands for status changes (blackjack, win, bust)
 // house hands have computed values
 watch([playerHandsMap, hasHouseRevealed], () => {
-    // short-circuit if House has blackjack
-    if (houseHasBlackjack.value || houseIsBust.value) {
+    console.log('checking for winners');
+
+    // short-circuit if House busts
+    if (/* houseHasBlackjack.value || */ houseIsBust.value) {
         return;
     }
 
@@ -128,16 +132,21 @@ watch([playerHandsMap, hasHouseRevealed], () => {
 
         // only consider ready hands
         if (hand.length >= 2) {
-            if (handIsBust(hand)) {
-                bustedPlayerIDs.value.push(playerID);
-            } else if (handWins(hand)) { // includes blackjack
-                winningPlayerIDs.value.push(playerID);
+            /*
+             * hasBlackjack is a subset of handWins, but handWins
+             * isn't calculated until hasHouseRevealed. Instead,
+             * consider it separately.
+             */
+            if (PlayingCards.hasBlackjack(hand)) {
+                console.log('hand has blackjack', players.find(p => p.uuid === playerID)?.name);
+                blackjackPlayerIDs.push(playerID);
+                standingPlayerIDs.push(playerID);
+            }
 
-                // subset of wins
-                if (PlayingCards.hasBlackjack(hand)) {
-                    blackjackPlayerIDs.value.push(playerID);
-                    standingPlayerIDs.value.push(playerID);
-                }
+            if (handIsBust(hand)) {
+                bustedPlayerIDs.push(playerID);
+            } else if (handWins(hand)) { // includes blackjack
+                winningPlayerIDs.push(playerID);
             }
         }
     });
@@ -151,7 +160,7 @@ watch(allPlayersAreBust, () => {
 });
 
 watch(standingPlayerIDs, () => {
-    if (standingPlayerIDs.value.length === playerHands.value.length) {
+    if (standingPlayerIDs.length === playerHands.value.length) {
         completeHouseHand();
     }
 }, { deep: true });
@@ -163,9 +172,9 @@ watch(allPlayersAreFinished, () => {
 });
 
 // switch to just-created group
-watch(() => playerGroups.value.length, (newLength, oldLength) => {
+watch(() => playerGroups.length, (newLength, oldLength) => {
     if (newLength > oldLength ?? 0) {
-        const newestGroup = playerGroups.value[newLength - 1];
+        const newestGroup = playerGroups[newLength - 1];
         selectedGroupID.value = newestGroup.uuid;
     }
 });
@@ -173,7 +182,7 @@ watch(() => playerGroups.value.length, (newLength, oldLength) => {
 // TODO: animate dis/enabling
 watch(selectedGroupID, (newGroupID, oldGroupID) => {
     if (newGroupID && newGroupID !== oldGroupID) {
-        players.value.forEach(player => {
+        players.forEach(player => {
             player.enabled = player?.inGroup === newGroupID;
         });
     }
@@ -183,7 +192,7 @@ onBeforeMount(() => {
     // load from saved state
     // const state: SessionStore = Session.loadGameSession();
 
-    drawDeck.value = /*state?.drawDeck ??*/ PlayingCards.shuffleDeck(PlayingCards.generateDeck());
+    drawDeck.splice(0, Infinity, /*state?.drawDeck ??*/ ...PlayingCards.shuffleDeck(PlayingCards.generateDeck()));
 
     // if (Array.isArray(state?.players)) {
     //   // N.B.: Because forEach iterates over the original array, add+save doesn't get stuck in a loop here.
@@ -219,11 +228,11 @@ const addPlayer = (player?: IPlayer, skipSave = false) => {
         newPlayer.inGroup = selectedGroupID.value;
     }
 
-    players.value.push(newPlayer);
+    players.push(newPlayer);
 
     if (!skipSave) {
         Session.saveGameSession({
-            'players': players.value,
+            'players': players,
         });
     }
 };
@@ -254,11 +263,11 @@ const dealInitialHands = () => {
     }
 
     // TODO: move save session calls into watch(es)
-    Session.saveGameSession({ 'drawDeck': drawDeck.value });
+    Session.saveGameSession({ 'drawDeck': drawDeck });
 };
 
 const dealTo = (hand: TDeck, facing: TCardFacing = 'up') => {
-    if (drawDeck.value.length === 0) {
+    if (drawDeck.length === 0) {
         reshuffleDrawDeck();
     }
 
@@ -268,16 +277,21 @@ const dealTo = (hand: TDeck, facing: TCardFacing = 'up') => {
         return;
     }
 
-    const nextCard = PlayingCards.getTopCard(drawDeck.value);
+    const nextCard = PlayingCards.getTopCard(drawDeck);
 
     if (nextCard) {
         hand.push(nextCard);
+        /*
+         * Prior to adding the deck number to the ID, changing the
+         * facing would update all cards in the draw deck matching
+         * this suit-value pair.
+         */
         nextCard.facing = facing;
     } else {
         throw new Error('Insufficient cards.');
     }
 
-    Session.saveGameSession({ 'drawDeck': drawDeck.value });
+    Session.saveGameSession({ 'drawDeck': drawDeck });
 };
 
 const dealToHouse = (skipWarning = false, facing: TCardFacing = 'up') => {
@@ -293,7 +307,7 @@ const dealToHouse = (skipWarning = false, facing: TCardFacing = 'up') => {
 // TODO: add turn over animation
 // TODO: add movement to card holder (hand)
 const dealToPlayer = (player: IPlayer) => {
-    if (standingPlayerIDs.value.includes(player.uuid) || hasHouseRevealed.value) {
+    if (standingPlayerIDs.includes(player.uuid) || hasHouseRevealed.value) {
         return;
     }
 
@@ -304,14 +318,14 @@ const dealToPlayer = (player: IPlayer) => {
 const discardAll = () => {
     discardHand(houseHand.value);
     playerHands.value.forEach(hand => discardHand(hand));
-    standingPlayerIDs.value.length = 0;
-    blackjackPlayerIDs.value.length = 0;
-    bustedPlayerIDs.value.length = 0;
-    winningPlayerIDs.value.length = 0;
+    standingPlayerIDs.length = 0;
+    blackjackPlayerIDs.length = 0;
+    bustedPlayerIDs.length = 0;
+    winningPlayerIDs.length = 0;
 };
 
 const discardHand = (hand: TDeck) => {
-    discardDeck.value = discardDeck.value.concat(hand);
+    discardDeck.splice(-1, 0, ...hand);
     hand.length = 0;
 };
 
@@ -341,31 +355,31 @@ const handWins = (hand: TDeck): boolean => {
 const isEligibleForSplit = (hand: TDeck): boolean => hand.length === 2 && hand[0] === hand[1];
 
 const removePlayer = (player: IPlayer) => {
-    const playerIndex = players.value.findIndex(p => p.uuid === player.uuid);
+    const playerIndex = players.findIndex(p => p.uuid === player.uuid);
 
-    players.value.splice(playerIndex, 1);
+    players.splice(playerIndex, 1);
     discardHand(playerHandsMap.value[player.uuid]);
     delete playerHandsMap.value[player.uuid];
 
     Session.saveGameSession({
-        'players': players.value,
+        'players': players,
     });
 };
 
 const reshuffleDrawDeck = () => {
     // only allow reshuffle if draw deck is empty
-    if (drawDeck.value.length === 0) {
+    if (drawDeck.length === 0) {
         // we can only shuffle from the discard pile
-        if (discardDeck.value.length > 0) {
-            console.debug(`Reshuffling ${discardDeck.value.length} cards from the discard pile.`);
-            drawDeck.value = PlayingCards.shuffleDeck(discardDeck.value);
-            discardDeck.value.length = 0;
+        if (discardDeck.length > 0) {
+            console.debug(`Reshuffling ${discardDeck.length} cards from the discard pile.`);
+            drawDeck.splice(0, Infinity, ...PlayingCards.shuffleDeck(toRawDeep(discardDeck)));
+            discardDeck.length = 0;
         } else {
             throw new Error('No cards available to reshuffle.');
         }
     }
 
-    Session.saveGameSession({ 'drawDeck': drawDeck.value });
+    Session.saveGameSession({ 'drawDeck': drawDeck });
 };
 
 const revealHouseHand = () => {
@@ -382,14 +396,15 @@ const splitHand = (player: IPlayer) => {
 };
 
 const standPlayer = (player: IPlayer) => {
-    standingPlayerIDs.value.push(player.uuid);
+    standingPlayerIDs.push(player.uuid);
 };
 
+// TODO: when adding disabled player to active group, player doesn't become active
 const updatePlayer = (updatedPlayer: IPlayer) => {
     console.log('updated player', structuredClone(updatedPlayer));
-    const playerIndex = players.value.findIndex(p => p.uuid === updatedPlayer.uuid);
-    players.value[playerIndex] = structuredClone(updatedPlayer);
-    Session.saveGameSession({ 'players': players.value });
+    const playerIndex = players.findIndex(p => p.uuid === updatedPlayer.uuid);
+    players[playerIndex] = structuredClone(updatedPlayer);
+    Session.saveGameSession({ 'players': players });
 };
 </script>
 
@@ -477,12 +492,12 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
           <PlayerName :player="player" @rename="updatePlayer"></PlayerName>
           <PlayerAddToGroup :player="player" v-model="playerGroups" @update:player="updatePlayer"></PlayerAddToGroup>
           <PlayerToggle :player="player" v-model="player.enabled"></PlayerToggle>
-          <PlayerRemove :player="player" :disable="players.length <= 1" @remove="removePlayer"></PlayerRemove>
+          <PlayerRemove :player="player" :players-count="sortedPlayers.length" :disable="players.length <= 1" @remove="removePlayer"></PlayerRemove>
         </template>
         <template #default="{ cardSize }">
           <Card
               v-for="card in playerHandsMap[player.uuid]"
-              :key="PlayingCards.getCardID(card)"
+              :key="card.id"
               :card="card"
               :card-size="cardSize"
               random-layout
