@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed} from 'vue';
-import {PlayingCards} from '@/utilities/PlayingCards';
+import {PlayingCardUtils} from '@/utilities/PlayingCardUtils';
 import SuitSymbol from '@/components/SuitSymbol.vue';
 import type {ICard, TCardSize} from '@/utilities/PlayingCards';
 
@@ -22,7 +22,7 @@ const isFaceUp = computed(() => props.card.facing === 'up');
 
 const getStyle = computed(() => {
     const styles: Record<string, string> = {
-        'color': PlayingCards.getColor(props.card.suit),  // TODO: this gives away color in markup
+        'color': PlayingCardUtils.getColor(props.card.suit),  // TODO: this gives away color in markup
     };
     if (props.randomLayout) {
         styles.transform = `translateY(${randomOffset}px) rotate(${randomAngle}deg)`;

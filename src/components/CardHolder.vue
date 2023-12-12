@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {computed} from 'vue';
 import type {TCardSize} from '@/utilities/PlayingCards';
+import type {THandTotal} from '@/utilities/Blackjack';
 
 const props = withDefaults(defineProps<{
     bust?: boolean,
@@ -8,7 +9,7 @@ const props = withDefaults(defineProps<{
     disable?: boolean,
     label?: string,
     singleColumn?: boolean,
-    total?: number,
+    total?: THandTotal,
     win?: boolean,
 }>(), {
     bust: false,
@@ -47,6 +48,20 @@ const cardPadding = computed(() => {
     }
 });
 
+const totalText = computed(() => {
+    if (typeof props.total === 'undefined') {
+        return '';
+    }
+    if (!Array.isArray(props.total)) {
+        if (props.total <= 0) {
+            return '--';
+        }
+        return props.total.toString();
+    }
+
+    return `${props.total[0]}/${props.total[1]}`;
+});
+
 const showTotal = typeof props?.total !== 'undefined';
 </script>
 
@@ -71,7 +86,7 @@ const showTotal = typeof props?.total !== 'undefined';
 
       <div v-if="showTotal" class="area-total">
         <span class="total-label">Total</span>
-        <span>{{ total && total < 0 ? '--' : total }}</span>
+        <span v-html="totalText"></span>
         <slot name="side"></slot>
       </div>
     </div>

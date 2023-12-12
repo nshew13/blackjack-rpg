@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {PlayingCards} from '@/utilities/PlayingCards';
+import {PlayingCardUtils} from '@/utilities/PlayingCardUtils';
 import type {TCardSuit} from '@/utilities/PlayingCards';
 
 const props = defineProps<{
@@ -8,5 +8,5 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="suit-symbol" v-html="PlayingCards.getHtmlEntity(props.suit)"></div>
+  <div class="suit-symbol" v-html="PlayingCardUtils.getHtmlEntity(props.suit)"></div>
 </template>

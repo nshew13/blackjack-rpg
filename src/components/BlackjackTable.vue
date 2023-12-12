@@ -10,7 +10,7 @@ import PlayerGroupDropdown from '@/components/controls/PlayerGroupDropdown.vue';
 import PlayerName from '@/components/controls/PlayerName.vue';
 import PlayerRemove from '@/components/controls/PlayerRemove.vue';
 import PlayerToggle from '@/components/controls/PlayerToggle.vue';
-import {PlayingCards} from '@/utilities/PlayingCards';
+import {Blackjack, type THandTotal} from '@/utilities/Blackjack';
 import {Session} from '@/utilities/Session';
 import type {IPlayer, IPlayerGroup} from '@/types/IPlayer';
 import type {Ref} from 'vue';
@@ -20,9 +20,11 @@ import type {TCardFacing, TDeck} from '@/utilities/PlayingCards';
 type TCardHolderMap = Record<string /* IPlayer.uuid */, TDeck>;
 type TPlayerID = IPlayer['uuid'];
 
+// TODO:BUG: player 4 at 20 didn't show standing, but game completed when 3 went bust
 
 const HOUSE_STANDS = 17;
 let nextPlayerNumber = 1;
+const blackjack = new Blackjack();
 
 //
 //
@@ -53,11 +55,11 @@ const houseHand: Ref<TDeck> = ref([]);
 
 // TODO: this is including disabled players (house doesn't auto-finish, players don't show wins)
 const allPlayersAreFinished = computed((): boolean => {
-    return standingPlayerIDs.length + playerHands.value.filter(hand => handIsBust(hand)).length === playerHands.value.length;
+    return standingPlayerIDs.length + playerHands.value.filter(hand => blackjack.handIsBust(hand)).length === playerHands.value.length;
 });
 
 const allPlayersAreBust = computed((): boolean => {
-    return playerHands.value.every(hand => handIsBust(hand));
+    return playerHands.value.every(hand => blackjack.handIsBust(hand));
 });
 
 const enabledPlayers = computed((): Array<IPlayer> => {
@@ -78,11 +80,11 @@ const hasDealtCards = computed((): boolean => {
     return playerHands.value.some(hand => hand.length > 0);
 });
 
-const houseHasBlackjack = computed((): boolean => PlayingCards.hasBlackjack(houseHand.value));
+const houseHasBlackjack = computed((): boolean => blackjack.handHasBlackjack(houseHand.value));
 
-const houseIsBust = computed((): boolean => handIsBust(houseHand.value));
+const houseIsBust = computed((): boolean => blackjack.handIsBust(houseHand.value));
 
-const houseTotal = computed((): number => PlayingCards.totalHand(houseHand.value));
+const houseTotal = computed((): THandTotal => blackjack.totalHand(houseHand.value));
 
 const playerHands = computed((): Array<TDeck> => {
     if (typeof playerHandsMap.value === 'undefined') {
@@ -133,20 +135,20 @@ watch([playerHandsMap, hasHouseRevealed], () => {
         // only consider ready hands
         if (hand.length >= 2) {
             /*
-             * hasBlackjack is a subset of handWins, but handWins
+             * handHasBlackjack is a subset of handWins, but handWins
              * isn't calculated until hasHouseRevealed. Instead,
              * consider it separately.
              *
              * Players with a blackjack will not show as winners
              * until the house reveals.
              */
-            if (PlayingCards.hasBlackjack(hand)) {
+            if (blackjack.handHasBlackjack(hand)) {
                 console.log('hand has blackjack', players.find(p => p.uuid === playerID)?.name);
                 blackjackPlayerIDs.push(playerID);
                 standingPlayerIDs.push(playerID);
             }
 
-            if (handIsBust(hand)) {
+            if (blackjack.handIsBust(hand)) {
                 bustedPlayerIDs.push(playerID);
             } else if (handWins(hand)) { // includes blackjack
                 winningPlayerIDs.push(playerID);
@@ -195,7 +197,7 @@ onBeforeMount(() => {
     // load from saved state
     // const state: SessionStore = Session.loadGameSession();
 
-    drawDeck.splice(0, Infinity, /*state?.drawDeck ??*/ ...PlayingCards.shuffleDeck(PlayingCards.generateDeck()));
+    drawDeck.splice(0, Infinity, /*state?.drawDeck ??*/ ...blackjack.shuffleDeck(blackjack.generateDeck()));
 
     // if (Array.isArray(state?.players)) {
     //   // N.B.: Because forEach iterates over the original array, add+save doesn't get stuck in a loop here.
@@ -261,7 +263,7 @@ const dealInitialHands = () => {
     dealToHouse(true);
 
     // reveal if dealer has blackjack
-    if (PlayingCards.hasBlackjack(houseHand.value)) {
+    if (blackjack.handHasBlackjack(houseHand.value)) {
         revealHouseHand();
     }
 
@@ -275,12 +277,12 @@ const dealTo = (hand: TDeck, facing: TCardFacing = 'up') => {
     }
 
     // TODO: is this necessary?
-    if (handIsBust(hand)) {
+    if (blackjack.handIsBust(hand)) {
         console.log('Hand is bust. I cannot even deal.');
         return;
     }
 
-    const nextCard = PlayingCards.getTopCard(drawDeck);
+    const nextCard = blackjack.getTopCard(drawDeck);
 
     if (nextCard) {
         hand.push(nextCard);
@@ -335,21 +337,34 @@ const discardHand = (hand: TDeck) => {
 const completeHouseHand = () => {
     if (!hasHouseRevealed.value) {
         revealHouseHand();
-        while (houseTotal.value < HOUSE_STANDS) {
-            dealToHouse();
+
+        if (!Array.isArray(houseTotal.value)) {
+            while (houseTotal.value < HOUSE_STANDS) {
+                dealToHouse();
+            }
+        } else {
+            while (houseTotal.value[0] < HOUSE_STANDS) {
+                dealToHouse();
+            }
         }
-        // TODO: compare scores to see if house wins
     }
 };
 
-const handIsBust = (hand: TDeck): boolean => PlayingCards.totalHand(hand) > 21;
-
 const handWins = (hand: TDeck): boolean => {
     if (hasHouseRevealed.value) {
-        const handTotal = PlayingCards.totalHand(hand);
+        let handTtl: THandTotal = blackjack.totalHand(hand);
+        let houseTtl: THandTotal = houseTotal.value;
 
-        return PlayingCards.hasBlackjack(hand) ||
-            (handTotal <= 21 && handTotal > houseTotal.value);
+        // assume player and house stand at higher total, if multiple
+        if (Array.isArray(handTtl)) {
+            handTtl = handTtl[0];
+        }
+        if (Array.isArray(houseTtl)) {
+            houseTtl = houseTtl[0];
+        }
+
+        return blackjack.handHasBlackjack(hand) ||
+            (handTtl <= 21 && handTtl > houseTtl);
     }
 
     return false;
@@ -375,7 +390,7 @@ const reshuffleDrawDeck = () => {
         // we can only shuffle from the discard pile
         if (discardDeck.length > 0) {
             console.debug(`Reshuffling ${discardDeck.length} cards from the discard pile.`);
-            drawDeck.splice(0, Infinity, ...PlayingCards.shuffleDeck(toRawDeep(discardDeck)));
+            drawDeck.splice(0, Infinity, ...blackjack.shuffleDeck(toRawDeep(discardDeck)));
             discardDeck.length = 0;
         } else {
             throw new Error('No cards available to reshuffle.');
@@ -454,7 +469,7 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
           @deal="dealToHouse"
           :bust="houseIsBust"
           card-size="small"
-          :total="hasHouseRevealed ? PlayingCards.totalHand(houseHand) : -1"
+          :total="hasHouseRevealed ? blackjack.totalHand(houseHand) : -1"
           :win="houseHasBlackjack || houseWins"
       >
         <!-- TODO: win isn't always working -->
@@ -487,7 +502,7 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
           card-size="small"
           :bust="bustedPlayerIDs.includes(player.uuid)"
           :disable="!player.enabled"
-          :total="PlayingCards.totalHand(playerHandsMap[player.uuid])"
+          :total="blackjack.totalHand(playerHandsMap[player.uuid])"
           :win="winningPlayerIDs.includes(player.uuid)"
           @deal="dealToPlayer(player)"
       >
@@ -507,7 +522,7 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
           ></Card>
         </template>
         <template #side>
-          <div class="stand">
+          <div v-if="hasDealtCards" class="stand">
             <q-btn v-if="!standingPlayerIDs.includes(player.uuid)" label="Stand" @click.stop="standPlayer(player)"></q-btn>
             <q-icon v-else class="stand-icon" name="front_hand" color="red"></q-icon>
           </div>
