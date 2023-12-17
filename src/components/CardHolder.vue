@@ -217,7 +217,6 @@ const showTotal = typeof props?.total !== 'undefined';
 
   &:not(.single-column) :deep(.card:hover) {
     z-index: 64;
-    /* TODO: adjust angle along arc */
     box-shadow: 0 0 25px 15px goldenrod;
   }
 }

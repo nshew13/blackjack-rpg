@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, onBeforeMount, reactive, ref, shallowReactive, watch} from 'vue';
+import {computed, onBeforeMount, reactive, ref, shallowReactive, toRaw, watch} from 'vue';
 import {toRawDeep} from '@/utilities/toRawDeep';
 import Card from '@/components/Card.vue';
 import CardHolder from '@/components/CardHolder.vue';
@@ -417,11 +417,18 @@ const standPlayer = (player: IPlayer) => {
     standingPlayerIDs.push(player.uuid);
 };
 
-// TODO: when adding disabled player to active group, player doesn't become active
 const updatePlayer = (updatedPlayer: IPlayer) => {
-    console.log('updated player', structuredClone(updatedPlayer));
-    const playerIndex = players.findIndex(p => p.uuid === updatedPlayer.uuid);
-    players[playerIndex] = structuredClone(updatedPlayer);
+    const clonedPlayer = structuredClone(toRaw(updatedPlayer));
+    const playerIndex = players.findIndex(p => p.uuid === clonedPlayer.uuid);
+
+    // if adding player to active group, make sure the player is enabled
+    clonedPlayer.enabled = (playerGroups.length > 0 &&
+        typeof selectedGroupID.value !== 'undefined' &&
+        typeof clonedPlayer?.inGroup !== 'undefined' &&
+        clonedPlayer.inGroup === selectedGroupID.value
+    );
+
+    players[playerIndex] = clonedPlayer;
     Session.saveGameSession({ 'players': players });
 };
 </script>
