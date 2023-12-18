@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, onBeforeMount, reactive, ref, shallowReactive, toRaw, watch} from 'vue';
+import {computed, onBeforeMount, reactive, ref, shallowReactive, toRaw, watch, watchEffect} from 'vue';
 import {toRawDeep} from '@/utilities/toRawDeep';
 import Card from '@/components/Card.vue';
 import CardHolder from '@/components/CardHolder.vue';
@@ -20,8 +20,6 @@ import type {TCardFacing, TDeck} from '@/utilities/PlayingCards';
 type TCardHolderMap = Record<string /* IPlayer.uuid */, TDeck>;
 type TPlayerID = IPlayer['uuid'];
 
-// TODO:BUG: player 4 at 20 didn't show standing, but game completed when 3 went bust
-
 const HOUSE_STANDS = 17;
 let nextPlayerNumber = 1;
 const blackjack = new Blackjack();
@@ -41,10 +39,10 @@ const hasHouseRevealed = ref<boolean>(false);
 const houseWins = ref<boolean>(false);
 const showConfirmHouse = ref<boolean>(false);
 
-const standingPlayerIDs = shallowReactive<TPlayerID[]>([]);
-const blackjackPlayerIDs = shallowReactive<TPlayerID[]>([]);
-const bustedPlayerIDs = shallowReactive<TPlayerID[]>([]);
-const winningPlayerIDs = shallowReactive<TPlayerID[]>([]);
+const blackjackPlayerIDs = shallowReactive<Set<TPlayerID>>(new Set());
+const bustedPlayerIDs = shallowReactive<Set<TPlayerID>>(new Set());
+const standingPlayerIDs = shallowReactive<Set<TPlayerID>>(new Set());
+const winningPlayerIDs = shallowReactive<Set<TPlayerID>>(new Set());
 
 
 /**
@@ -52,11 +50,6 @@ const winningPlayerIDs = shallowReactive<TPlayerID[]>([]);
  */
 const playerHandsMap: Ref<TCardHolderMap> = ref({});
 const houseHand: Ref<TDeck> = ref([]);
-
-// TODO: this is including disabled players (house doesn't auto-finish, players don't show wins)
-const allPlayersAreFinished = computed((): boolean => {
-    return standingPlayerIDs.length + playerHands.value.filter(hand => blackjack.handIsBust(hand)).length === playerHands.value.length;
-});
 
 const allPlayersAreBust = computed((): boolean => {
     return playerHands.value.every(hand => blackjack.handIsBust(hand));
@@ -113,22 +106,44 @@ const sortedPlayers = computed((): Array<IPlayer> => {
     });
 });
 
+const unfinishedPlayerIDs = computed((): Array<IPlayer['uuid']> => {
+    return players.filter((player) => {
+        return (
+            !blackjackPlayerIDs.has(player.uuid) &&
+            !bustedPlayerIDs.has(player.uuid) &&
+            !standingPlayerIDs.has(player.uuid) &&
+            !winningPlayerIDs.has(player.uuid)
+        );
+    }).map((player) => player.uuid);
+});
+
 
 //
 //
-// WATCHES and LIFECYCLE HOOKS
+// WATCHES (non-immediate) and LIFECYCLE HOOKS
 //
 
 // watch all player hands for status changes (blackjack, win, bust)
 // house hands have computed values
-watch([playerHandsMap, hasHouseRevealed], () => {
-    console.log('checking for winners');
+watch([playerHandsMap, hasHouseRevealed, houseIsBust], () => {
+    /*
+     * If the House has gone bust, we don't need to reset player
+     * status and re-evaluate each player. As long as the player
+     * isn't bust, mark him as winning.
+     */
+    if (houseIsBust.value) {
+        unfinishedPlayerIDs.value.forEach((playerID) => {
+            winningPlayerIDs.add(playerID);
+        });
 
-    // short-circuit if House busts
-    if (/* houseHasBlackjack.value || */ houseIsBust.value) {
         return;
     }
 
+    // TODO: need to mark losing hands
+    // TODO: add status to IPlayer, but just win/lose
+    //       extend in Blackjack with bust, bj, stand
+
+    resetPlayerStatuses();
     Object.keys(playerHandsMap.value).forEach(playerID => {
         const hand = playerHandsMap.value[playerID]; // shortcut
 
@@ -143,15 +158,14 @@ watch([playerHandsMap, hasHouseRevealed], () => {
              * until the house reveals.
              */
             if (blackjack.handHasBlackjack(hand)) {
-                console.log('hand has blackjack', players.find(p => p.uuid === playerID)?.name);
-                blackjackPlayerIDs.push(playerID);
-                standingPlayerIDs.push(playerID);
+                blackjackPlayerIDs.add(playerID);
+                standingPlayerIDs.add(playerID);
             }
 
             if (blackjack.handIsBust(hand)) {
-                bustedPlayerIDs.push(playerID);
+                bustedPlayerIDs.add(playerID);
             } else if (handWins(hand)) { // includes blackjack
-                winningPlayerIDs.push(playerID);
+                winningPlayerIDs.add(playerID);
             }
         }
     });
@@ -165,16 +179,10 @@ watch(allPlayersAreBust, () => {
 });
 
 watch(standingPlayerIDs, () => {
-    if (standingPlayerIDs.length === playerHands.value.length) {
+    if (standingPlayerIDs.size === playerHands.value.length) {
         completeHouseHand();
     }
 }, { deep: true });
-
-watch(allPlayersAreFinished, () => {
-    if (allPlayersAreFinished.value) {
-        completeHouseHand();
-    }
-});
 
 // switch to just-created group
 watch(() => playerGroups.length, (newLength, oldLength) => {
@@ -296,7 +304,7 @@ const dealTo = (hand: TDeck, facing: TCardFacing = 'up') => {
         throw new Error('Insufficient cards.');
     }
 
-    Session.saveGameSession({ 'drawDeck': drawDeck });
+    // Session.saveGameSession({ 'drawDeck': drawDeck });
 };
 
 const dealToHouse = (skipWarning = false, facing: TCardFacing = 'up') => {
@@ -312,7 +320,7 @@ const dealToHouse = (skipWarning = false, facing: TCardFacing = 'up') => {
 // TODO: add turn over animation
 // TODO: add movement to card holder (hand)
 const dealToPlayer = (player: IPlayer) => {
-    if (standingPlayerIDs.includes(player.uuid) || hasHouseRevealed.value) {
+    if (standingPlayerIDs.has(player.uuid) || hasHouseRevealed.value) {
         return;
     }
 
@@ -323,10 +331,7 @@ const dealToPlayer = (player: IPlayer) => {
 const discardAll = () => {
     discardHand(houseHand.value);
     playerHands.value.forEach(hand => discardHand(hand));
-    standingPlayerIDs.length = 0;
-    blackjackPlayerIDs.length = 0;
-    bustedPlayerIDs.length = 0;
-    winningPlayerIDs.length = 0;
+    resetPlayerStatuses();
 };
 
 const discardHand = (hand: TDeck) => {
@@ -384,6 +389,13 @@ const removePlayer = (player: IPlayer) => {
     });
 };
 
+const resetPlayerStatuses = () => {
+    standingPlayerIDs.clear();
+    blackjackPlayerIDs.clear();
+    bustedPlayerIDs.clear();
+    winningPlayerIDs.clear();
+};
+
 const reshuffleDrawDeck = () => {
     // only allow reshuffle if draw deck is empty
     if (drawDeck.length === 0) {
@@ -393,7 +405,8 @@ const reshuffleDrawDeck = () => {
             drawDeck.splice(0, Infinity, ...blackjack.shuffleDeck(toRawDeep(discardDeck)));
             discardDeck.length = 0;
         } else {
-            throw new Error('No cards available to reshuffle.');
+            drawDeck.splice(0, Infinity, ...blackjack.shuffleDeck(blackjack.generateDeck()));
+            // throw new Error('No cards available to reshuffle.');
         }
     }
 
@@ -414,7 +427,11 @@ const splitHand = (player: IPlayer) => {
 };
 
 const standPlayer = (player: IPlayer) => {
-    standingPlayerIDs.push(player.uuid);
+    if (hasHouseRevealed.value) {
+        return;
+    }
+
+    standingPlayerIDs.add(player.uuid);
 };
 
 const updatePlayer = (updatedPlayer: IPlayer) => {
@@ -431,6 +448,26 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
     players[playerIndex] = clonedPlayer;
     Session.saveGameSession({ 'players': players });
 };
+
+
+//
+//
+// WATCHES (immediate) and WATCHEFFECTS
+//
+
+/**
+ * fires when all enabled players are standing or bust
+ */
+watchEffect(() => {
+    const numStanding = standingPlayerIDs.size;
+    const numBust = playerHands.value.filter(hand => blackjack.handIsBust(hand)).length;
+
+    if (enabledPlayers.value.length > 0 &&
+        numStanding + numBust === enabledPlayers.value.length
+    ) {
+        completeHouseHand();
+    }
+});
 </script>
 
 <template>
@@ -507,10 +544,10 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
           v-for="player in sortedPlayers"
           :key="player.uuid"
           card-size="small"
-          :bust="bustedPlayerIDs.includes(player.uuid)"
+          :bust="bustedPlayerIDs.has(player.uuid)"
           :disable="!player.enabled"
           :total="blackjack.totalHand(playerHandsMap[player.uuid])"
-          :win="winningPlayerIDs.includes(player.uuid)"
+          :win="winningPlayerIDs.has(player.uuid)"
           @deal="dealToPlayer(player)"
       >
         <template #header>
@@ -530,7 +567,7 @@ const updatePlayer = (updatedPlayer: IPlayer) => {
         </template>
         <template #side>
           <div v-if="hasDealtCards" class="stand">
-            <q-btn v-if="!standingPlayerIDs.includes(player.uuid)" label="Stand" @click.stop="standPlayer(player)"></q-btn>
+            <q-btn v-if="!standingPlayerIDs.has(player.uuid)" label="Stand" @click.stop="standPlayer(player)"></q-btn>
             <q-icon v-else class="stand-icon" name="front_hand" color="red"></q-icon>
           </div>
           <q-btn

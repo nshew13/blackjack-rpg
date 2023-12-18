@@ -66,7 +66,7 @@ const showTotal = typeof props?.total !== 'undefined';
 </script>
 
 <template>
-  <div class="card-holder" :class="{ 'win': win, 'disable': disable }">
+  <div class="card-holder" :class="{ 'win': win, 'disable': disable, 'bust': bust }">
     <div class="header">
       <q-avatar v-if="win" icon="verified" color="white" text-color="black"></q-avatar>
       <slot name="header">{{ label }}</slot>
@@ -77,7 +77,7 @@ const showTotal = typeof props?.total !== 'undefined';
         <slot :card-size="cardSize">
           <!-- expected <Card>(s) or <Deck> -->
         </slot>
-        <svg v-if="bust" class="bust" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
+        <svg v-if="bust" class="bust-marker" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
              viewBox="0 0 100 100">
           <path d="M0 0 L100 100" />
           <path d="M0 100 L100 0" />
@@ -126,6 +126,10 @@ const showTotal = typeof props?.total !== 'undefined';
     transform: scale(75%);
   }
 
+  &.bust {
+    opacity: 0.50;
+  }
+
   /* center label and area along vertical axis */
   display: flex;
   flex-direction: column;
@@ -158,7 +162,7 @@ const showTotal = typeof props?.total !== 'undefined';
 .card-area {
   --card-area-padding: 15px;
 
-  position: relative; /* anchor for .bust's absolute */
+  position: relative; /* anchor for .bust-marker's absolute */
 
   display: grid;
   /*
@@ -183,7 +187,7 @@ const showTotal = typeof props?.total !== 'undefined';
   align-items: center;
   row-gap: var(--card-area-padding);
 
-  margin: 15px 15px 15px 0;
+  margin: 15px 0 30px;
   padding: var(--card-area-padding);
   cursor: pointer;
   border-radius: var(--card-corner-radius);
@@ -221,7 +225,7 @@ const showTotal = typeof props?.total !== 'undefined';
   }
 }
 
-.bust {
+.bust-marker {
   position: absolute;
   stroke: rgba(255, 0, 0, 0.7);
   stroke-width: 4px;
@@ -236,7 +240,7 @@ const showTotal = typeof props?.total !== 'undefined';
   font-family: "BioRhyme", "Droid Serif", serif;
   font-size: 36pt;
   line-height: 1;
-  min-width: 2em;
+  min-width: 2.5em;
   text-align: center;
 }
 
