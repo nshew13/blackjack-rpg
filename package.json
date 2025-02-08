@@ -13,23 +13,21 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "@quasar/extras": "^1.16.9",
-    "quasar": "^2.14.1",
-    "vue": "^3.3.9"
+    "@quasar/extras": "^1.16.16",
+    "quasar": "^2.17.7",
+    "vue": "^3.5.13"
   },
   "devDependencies": {
-    "@quasar/vite-plugin": "^1.6.0",
-    "@types/jsdom": "^21.1.6",
+    "@quasar/vite-plugin": "^1.9.0",
+    "@types/jsdom": "^21.1.7",
     "@types/node": "^20.10.1",
-    "@vitejs/plugin-vue": "^4.5.0",
-    "@vue/eslint-config-typescript": "^12.0.0",
-    "@vue/test-utils": "^2.4.3",
-    "@vue/tsconfig": "^0.4.0",
+    "@vue/test-utils": "^2.4.6",
+    "@vue/tsconfig": "^0.7.0",
     "eslint": "^8.54.0",
     "eslint-plugin-vue": "^9.18.1",
     "jsdom": "^23.0.0",
     "npm-run-all2": "^6.1.1",
-    "typescript": "~5.3.2",
+    "typescript": "~5.7.3",
     "vite": "^4",
     "vite-plugin-singlefile": "^0.13.5",
     "vitest": "^0.34.6",
