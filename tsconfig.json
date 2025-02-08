@@ -11,6 +11,8 @@
   "compilerOptions": {
     "lib": [
       "ES2023.Array",
-    ]
+    ],
+    "module": "es2022",
+    "moduleResolution": "bundler"
   }
 }
