@@ -7,7 +7,7 @@ $q.dark.set(true);
 </script>
 
 <template>
-  <BlackjackTable></BlackjackTable>
+  <BlackjackTable />
 </template>
 
 <style scoped>

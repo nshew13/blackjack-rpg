@@ -2,7 +2,7 @@ import type {TCardColor, TCardSuit} from '@/utilities/PlayingCards';
 
 export class PlayingCardUtils {
     static getColor(suit: TCardSuit): TCardColor {
-        return suit === ('hearts' || 'diamonds') ? 'red' : 'black';
+        return (suit === 'hearts' || suit === 'diamonds') ? 'red' : 'black';
     }
 
     static getHtmlEntity(suit: TCardSuit): string {
