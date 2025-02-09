@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import {computed, onBeforeMount, reactive, ref, shallowReactive, toRaw, watch, watchEffect} from 'vue';
 import {toRawDeep} from '@/utilities/toRawDeep';
-import Card from '@/components/Card.vue';
+import StandardCard from '@/components/StandardCard.vue';
 import CardHolder from '@/components/CardHolder.vue';
 import ConfirmationDialog from '@/components/controls/ConfirmationDialog.vue';
-import Deck from '@/components/Deck.vue';
+import CardDeck from '@/components/CardDeck.vue';
 import PlayerAddToGroup from '@/components/controls/PlayerAddToGroup.vue';
 import PlayerGroupDropdown from '@/components/controls/PlayerGroupDropdown.vue';
 import PlayerName from '@/components/controls/PlayerName.vue';
@@ -186,7 +186,7 @@ watch(standingPlayerIDs, () => {
 
 // switch to just-created group
 watch(() => playerGroups.length, (newLength, oldLength) => {
-    if (newLength > oldLength ?? 0) {
+    if (newLength > (oldLength ?? 0)) {
         const newestGroup = playerGroups[newLength - 1];
         selectedGroupID.value = newestGroup.uuid;
     }
@@ -481,7 +481,7 @@ watchEffect(() => {
 
     <section class="decks">
       <CardHolder label="Draw" class="draw-deck" single-column>
-        <Deck :cards="drawDeck" @reshuffle="reshuffleDrawDeck"></Deck>
+        <CardDeck :cards="drawDeck" @reshuffle="reshuffleDrawDeck"></CardDeck>
 
         <template #actions>
           <div class="draw-deck-count">{{ drawDeck.length }} remaining</div>
@@ -503,7 +503,7 @@ watchEffect(() => {
       </div>
 
       <CardHolder label="Discard" class="discard-pile" single-column>
-        <Deck :cards="discardDeck" facing="up"></Deck>
+        <CardDeck :cards="discardDeck" facing="up"></CardDeck>
       </CardHolder>
     </section>
 
@@ -526,14 +526,14 @@ watchEffect(() => {
           ></q-btn>
         </template>
         <template #default="{ cardSize }">
-          <Card
+          <StandardCard
               v-for="card in houseHand"
               :key="card.id"
               :card="card"
               :card-size="cardSize"
               random-layout
               @card-reveal="hasHouseRevealed = true"
-          ></Card>
+          ></StandardCard>
         </template>
       </CardHolder>
 
@@ -557,13 +557,13 @@ watchEffect(() => {
           <PlayerRemove :player="player" :players-count="sortedPlayers.length" :disable="players.length <= 1" @remove="removePlayer"></PlayerRemove>
         </template>
         <template #default="{ cardSize }">
-          <Card
+          <StandardCard
               v-for="card in playerHandsMap[player.uuid]"
               :key="card.id"
               :card="card"
               :card-size="cardSize"
               random-layout
-          ></Card>
+          ></StandardCard>
         </template>
         <template #side>
           <div v-if="hasDealtCards" class="stand">

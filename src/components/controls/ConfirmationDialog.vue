@@ -15,24 +15,24 @@ const emit = defineEmits<{
     (e: 'ok'): void,
 }>();
 
-const showDialog = ref<boolean>(false);
-watchEffect(() => showDialog.value = props.showDialog);
+const showDialogInternal = ref<boolean>(false);
+watchEffect(() => showDialogInternal.value = props.showDialog);
 
 const cancel = () => {
     emit('cancel');
-    showDialog.value = false;
+    showDialogInternal.value = false;
     emit('close');
 };
 
 const ok = () => {
     emit('ok');
-    showDialog.value = false;
+    showDialogInternal.value = false;
     emit('close');
 };
 </script>
 
 <template>
-  <q-dialog v-model="showDialog" width="500">
+  <q-dialog v-model="showDialogInternal" width="500">
     <q-card class="confirmation-dialog" color="indigo-darken-3">
       {{ message }}
 

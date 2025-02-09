@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type {IPlayer} from '@/types/IPlayer';
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
     player: IPlayer,
     playersCount: number,
 }>(), {

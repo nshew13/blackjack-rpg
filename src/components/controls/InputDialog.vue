@@ -18,28 +18,28 @@ const emit = defineEmits<{
 }>();
 
 const inputField = ref<string>('');
-const showDialog = ref<boolean>(false);
+const showDialogInternal = ref<boolean>(false);
 watchEffect(() => {
     inputField.value = props.startingValue;
-    showDialog.value = props.showDialog;
+    showDialogInternal.value = props.showDialog;
 });
 
 
 const cancel = () => {
-    showDialog.value = false;
+    showDialogInternal.value = false;
     emit('close');
 };
 
 const saveChanges = (event: Event) => {
     emit('update', event, inputField.value);
-    showDialog.value = false;
+    showDialogInternal.value = false;
     emit('close');
 };
 </script>
 
 <template>
   <q-dialog
-      v-model="showDialog"
+      v-model="showDialogInternal"
       width="500"
       @show="($refs.input as QInput).select()"
   >

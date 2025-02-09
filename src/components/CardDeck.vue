@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed} from 'vue';
-import Card from '@/components/Card.vue';
+import StandardCard from '@/components/StandardCard.vue';
 import type {ICard, TCardFacing, TDeck} from '@/utilities/PlayingCards';
 
 const props = withDefaults(defineProps<{
@@ -37,6 +37,6 @@ const emitCardClick = (event: Event) => {
 
 <template>
   <div class="deck" @click.stop="emitCardClick">
-    <Card v-if="topCard" :card="topCard"></Card>
+    <StandardCard v-if="topCard" :card="topCard"></StandardCard>
   </div>
 </template>

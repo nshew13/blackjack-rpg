@@ -2,7 +2,7 @@
 import type {IPlayerGroup} from '@/types/IPlayer';
 import type {QBtnDropdown} from 'quasar';
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
     helpText?: string,
     icon?: string,
     label?: string,

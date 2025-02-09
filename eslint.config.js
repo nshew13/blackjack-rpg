@@ -26,8 +26,7 @@ export default [
     },
 
     // TypeScript
-    // chosen typescript defaults - could not get this working
-    // ...tsEslint.configs['recommended'],
+    ...tsEslint.configs['recommended'],
     {
         files: ['**/*.{ts,tsx,vue}'],
         languageOptions: {
@@ -36,7 +35,7 @@ export default [
     },
 
     // Vue
-    ...pluginVue.configs['flat/essential'],
+    ...pluginVue.configs['flat/recommended'],
     {
         files: ['**/*.vue'],
         languageOptions: {

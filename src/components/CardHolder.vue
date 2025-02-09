@@ -17,6 +17,7 @@ const props = withDefaults(defineProps<{
     disable: false,
     label: '',
     singleColumn: false,
+    total: 0,
     win: false,
 });
 
@@ -86,7 +87,7 @@ const showTotal = typeof props?.total !== 'undefined';
 
       <div v-if="showTotal" class="area-total">
         <span class="total-label">Total</span>
-        <span v-html="totalText"></span>
+        <span>{{ totalText }}</span>
         <slot name="side"></slot>
       </div>
     </div>
