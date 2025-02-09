@@ -16,7 +16,9 @@ const emit = defineEmits<{
 }>();
 
 const showDialogInternal = ref<boolean>(false);
-watchEffect(() => showDialogInternal.value = props.showDialog);
+watchEffect(() => {
+    showDialogInternal.value = props.showDialog;
+});
 
 const cancel = () => {
     emit('cancel');

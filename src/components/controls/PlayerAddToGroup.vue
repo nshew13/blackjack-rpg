@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref} from 'vue';
+import {ref, toRaw} from 'vue';
 import InputDialog from '@/components/controls/InputDialog.vue';
 import PlayerGroupDropdown from '@/components/controls/PlayerGroupDropdown.vue';
 import type {IPlayer, IPlayerGroup} from '@/types/IPlayer';
@@ -18,8 +18,9 @@ const showDialog = ref<boolean>(false);
 
 
 const addPlayerToGroup = (group: IPlayerGroup) => {
-    props.player.inGroup = group.uuid;
-    emit('update:player', props.player);
+    const updatedPlayer = structuredClone(toRaw(props.player));
+    updatedPlayer.inGroup = group.uuid;
+    emit('update:player', updatedPlayer);
 };
 
 const addPlayerToNewGroup = (event: Event, newGroupName: string) => {
@@ -30,8 +31,10 @@ const addPlayerToNewGroup = (event: Event, newGroupName: string) => {
         name: newGroupName,
         uuid: crypto.randomUUID(),
     };
-    props.modelValue.push(newGroup);
-    emit('update', props.modelValue);
+
+    const updatedGroup = structuredClone(toRaw(props.modelValue));
+    updatedGroup.push(newGroup);
+    emit('update', updatedGroup);
 
     addPlayerToGroup(newGroup);
 };

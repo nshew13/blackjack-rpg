@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed} from 'vue';
+import {computed, ref, toRaw, watchEffect} from 'vue';
 import {PlayingCardUtils} from '@/utilities/PlayingCardUtils';
 import SuitSymbol from '@/components/SuitSymbol.vue';
 import type {ICard, TCardSize} from '@/utilities/PlayingCards';
@@ -17,12 +17,16 @@ const emit = defineEmits<{
     (e: 'card-reveal'): void
 }>();
 
+const cardInternal = ref<ICard | null>(null);
+watchEffect(() => {
+    cardInternal.value = structuredClone(toRaw(props.card));
+});
 
-const isFaceUp = computed(() => props.card.facing === 'up');
+const isFaceUp = computed(() => cardInternal.value?.facing === 'up');
 
 const getStyle = computed(() => {
     const styles: Record<string, string> = {
-        'color': PlayingCardUtils.getColor(props.card.suit),  // TODO: this gives away color in markup
+        'color': PlayingCardUtils.getColor(cardInternal.value?.suit),  // TODO: this gives away color in markup
     };
     if (props.randomLayout) {
         styles.transform = `translateY(${randomOffset}px) rotate(${randomAngle}deg)`;
@@ -50,10 +54,12 @@ const randomAngle = Math.floor((Math.random() - 0.5) * 10);
 const randomOffset = Math.floor((Math.random() - 0.5) * 10);
 
 const flipCardUp = () => {
-    if (props.card.facing === 'down') {
-        emit('card-reveal');
+    if (typeof cardInternal.value?.facing !== 'undefined') {
+        if(cardInternal.value?.facing === 'down') {
+            emit('card-reveal');
+        }
+        cardInternal.value.facing = 'up';
     }
-    props.card.facing = 'up';
 };
 </script>
 
@@ -64,14 +70,14 @@ const flipCardUp = () => {
       :style="getStyle"
       @click="flipCardUp"
   >
-    <template v-if="isFaceUp">
+    <template v-if="cardInternal && isFaceUp">
       <div :class="faceClasses">
-        {{ props.card.value }}
-        <SuitSymbol :suit="props.card.suit"></SuitSymbol>
+        {{ cardInternal.value }}
+        <SuitSymbol :suit="cardInternal.suit"></SuitSymbol>
       </div>
       <div v-if="cardSize === 'large'" class="corner bottom-right">
-        {{ props.card.value }}
-        <SuitSymbol :suit="props.card.suit"></SuitSymbol>
+        {{ cardInternal.value }}
+        <SuitSymbol :suit="cardInternal.suit"></SuitSymbol>
       </div>
     </template>
   </div>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {computed, onBeforeMount, reactive, ref, shallowReactive, toRaw, watch, watchEffect} from 'vue';
 import {toRawDeep} from '@/utilities/toRawDeep';
-import StandardCard from '@/components/StandardCard.vue';
+import CardStandard from '@/components/CardStandard.vue';
 import CardHolder from '@/components/CardHolder.vue';
 import ConfirmationDialog from '@/components/controls/ConfirmationDialog.vue';
 import CardDeck from '@/components/CardDeck.vue';
@@ -526,14 +526,14 @@ watchEffect(() => {
           ></q-btn>
         </template>
         <template #default="{ cardSize }">
-          <StandardCard
+          <CardStandard
               v-for="card in houseHand"
               :key="card.id"
               :card="card"
               :card-size="cardSize"
               random-layout
               @card-reveal="hasHouseRevealed = true"
-          ></StandardCard>
+          ></CardStandard>
         </template>
       </CardHolder>
 
@@ -557,13 +557,13 @@ watchEffect(() => {
           <PlayerRemove :player="player" :players-count="sortedPlayers.length" :disable="players.length <= 1" @remove="removePlayer"></PlayerRemove>
         </template>
         <template #default="{ cardSize }">
-          <StandardCard
+          <CardStandard
               v-for="card in playerHandsMap[player.uuid]"
               :key="card.id"
               :card="card"
               :card-size="cardSize"
               random-layout
-          ></StandardCard>
+          ></CardStandard>
         </template>
         <template #side>
           <div v-if="hasDealtCards" class="stand">

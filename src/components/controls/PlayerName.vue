@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, watchEffect} from 'vue';
+import {ref, toRaw, watchEffect} from 'vue';
 import type {IPlayer} from '@/types/IPlayer';
 import type {QInput} from 'quasar';
 
@@ -31,7 +31,7 @@ const validatePlayerName = (updatedName?: string) => {
 };
 
 const setPlayerName = (updatedName: string) => {
-    const updatedPlayer = structuredClone(props.player);
+    const updatedPlayer = structuredClone(toRaw(props.player));
     updatedPlayer.name = updatedName;
     emit('rename', updatedPlayer);
 };

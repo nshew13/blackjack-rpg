@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {computed} from 'vue';
-import StandardCard from '@/components/StandardCard.vue';
+import {computed, ref, toRaw, watchEffect} from 'vue';
+import CardStandard from '@/components/CardStandard.vue';
 import type {ICard, TCardFacing, TDeck} from '@/utilities/PlayingCards';
 
 const props = withDefaults(defineProps<{
@@ -11,12 +11,21 @@ const props = withDefaults(defineProps<{
     facing: 'down',
 });
 
+const cardsInternal = ref<TDeck>([]);
+watchEffect(() => {
+    try {
+        cardsInternal.value = structuredClone(toRaw(props.cards));
+    } catch (e) {
+        console.error(e);
+    }
+});
+
 const topCard = computed((): ICard | false => {
-    if (props.cards?.length > 0) {
+    if (cardsInternal.value?.length > 0) {
         if (props.facing === 'up') {
-            return props.cards[props.cards.length - 1];
+            return cardsInternal.value[cardsInternal.value.length - 1];
         }
-        return props.cards[0];
+        return cardsInternal.value[0];
     }
 
     return false;
@@ -27,8 +36,8 @@ const emit = defineEmits<{
 }>();
 
 const emitCardClick = (event: Event) => {
-    if (props.cards.length > 0) {
-        emit('click', event, <ICard>props.cards.shift());
+    if (cardsInternal.value.length > 0) {
+        emit('click', event, <ICard>cardsInternal.value.shift());
     } else {
         console.debug('deck is empty');
     }
@@ -37,6 +46,6 @@ const emitCardClick = (event: Event) => {
 
 <template>
   <div class="deck" @click.stop="emitCardClick">
-    <StandardCard v-if="topCard" :card="topCard"></StandardCard>
+    <CardStandard v-if="topCard" :card="topCard"></CardStandard>
   </div>
 </template>

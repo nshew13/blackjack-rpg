@@ -1,7 +1,7 @@
 import type {TCardColor, TCardSuit} from '@/utilities/PlayingCards';
 
 export class PlayingCardUtils {
-    static getColor(suit: TCardSuit): TCardColor {
+    static getColor(suit: TCardSuit | undefined): TCardColor {
         return (suit === 'hearts' || suit === 'diamonds') ? 'red' : 'black';
     }
 
