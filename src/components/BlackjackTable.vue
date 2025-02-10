@@ -481,7 +481,7 @@ watchEffect(() => {
 
     <section class="decks">
       <CardHolder label="Draw" class="draw-deck" single-column>
-        <CardDeck :cards="drawDeck" @reshuffle="reshuffleDrawDeck"></CardDeck>
+        <CardDeck v-model="drawDeck" @reshuffle="reshuffleDrawDeck" />
 
         <template #actions>
           <div class="draw-deck-count">{{ drawDeck.length }} remaining</div>
@@ -503,7 +503,7 @@ watchEffect(() => {
       </div>
 
       <CardHolder label="Discard" class="discard-pile" single-column>
-        <CardDeck :cards="discardDeck" facing="up"></CardDeck>
+        <CardDeck v-model="discardDeck" facing="up" />
       </CardHolder>
     </section>
 
@@ -526,14 +526,14 @@ watchEffect(() => {
           ></q-btn>
         </template>
         <template #default="{ cardSize }">
-          <CardStandard
-              v-for="card in houseHand"
-              :key="card.id"
-              :card="card"
-              :card-size="cardSize"
-              random-layout
-              @card-reveal="hasHouseRevealed = true"
-          ></CardStandard>
+          <template v-for="(card, index) in houseHand" :key="card.id">
+            <CardStandard
+                v-model="houseHand[index]"
+                :card-size="cardSize"
+                random-layout
+                @card-reveal="hasHouseRevealed = true"
+            />
+          </template>
         </template>
       </CardHolder>
 
@@ -557,13 +557,13 @@ watchEffect(() => {
           <PlayerRemove :player="player" :players-count="sortedPlayers.length" :disable="players.length <= 1" @remove="removePlayer"></PlayerRemove>
         </template>
         <template #default="{ cardSize }">
-          <CardStandard
-              v-for="card in playerHandsMap[player.uuid]"
-              :key="card.id"
-              :card="card"
-              :card-size="cardSize"
-              random-layout
-          ></CardStandard>
+          <template v-for="(card, index) in playerHandsMap[player.uuid]" :key="card.id">
+            <CardStandard
+                v-model="playerHandsMap[player.uuid][index]"
+                :card-size="cardSize"
+                random-layout
+            />
+          </template>
         </template>
         <template #side>
           <div v-if="hasDealtCards" class="stand">

@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import {computed, ref, toRaw, watchEffect} from 'vue';
+import {computed} from 'vue';
 import {PlayingCardUtils} from '@/utilities/PlayingCardUtils';
 import SuitSymbol from '@/components/SuitSymbol.vue';
 import type {ICard, TCardSize} from '@/utilities/PlayingCards';
 
 const props = withDefaults(defineProps<{
-    card: ICard,
     cardSize?: TCardSize,
     randomLayout?: boolean
 }>(), {
@@ -13,20 +12,17 @@ const props = withDefaults(defineProps<{
     randomLayout: false,
 });
 
+const card = defineModel<ICard>({required: true});
+
 const emit = defineEmits<{
     (e: 'card-reveal'): void
 }>();
 
-const cardInternal = ref<ICard | null>(null);
-watchEffect(() => {
-    cardInternal.value = structuredClone(toRaw(props.card));
-});
-
-const isFaceUp = computed(() => cardInternal.value?.facing === 'up');
+const isFaceUp = computed(() => card.value?.facing === 'up');
 
 const getStyle = computed(() => {
     const styles: Record<string, string> = {
-        'color': PlayingCardUtils.getColor(cardInternal.value?.suit),  // TODO: this gives away color in markup
+        'color': PlayingCardUtils.getColor(card.value?.suit),  // TODO: this gives away color in markup
     };
     if (props.randomLayout) {
         styles.transform = `translateY(${randomOffset}px) rotate(${randomAngle}deg)`;
@@ -54,11 +50,11 @@ const randomAngle = Math.floor((Math.random() - 0.5) * 10);
 const randomOffset = Math.floor((Math.random() - 0.5) * 10);
 
 const flipCardUp = () => {
-    if (typeof cardInternal.value?.facing !== 'undefined') {
-        if(cardInternal.value?.facing === 'down') {
+    if (typeof card.value?.facing !== 'undefined') {
+        if(card.value?.facing === 'down') {
             emit('card-reveal');
         }
-        cardInternal.value.facing = 'up';
+        card.value.facing = 'up';
     }
 };
 </script>
@@ -70,14 +66,14 @@ const flipCardUp = () => {
       :style="getStyle"
       @click="flipCardUp"
   >
-    <template v-if="cardInternal && isFaceUp">
+    <template v-if="card && isFaceUp">
       <div :class="faceClasses">
-        {{ cardInternal.value }}
-        <SuitSymbol :suit="cardInternal.suit"></SuitSymbol>
+        {{ card.value }}
+        <SuitSymbol :suit="card.suit"></SuitSymbol>
       </div>
       <div v-if="cardSize === 'large'" class="corner bottom-right">
-        {{ cardInternal.value }}
-        <SuitSymbol :suit="cardInternal.suit"></SuitSymbol>
+        {{ card.value }}
+        <SuitSymbol :suit="card.suit"></SuitSymbol>
       </div>
     </template>
   </div>

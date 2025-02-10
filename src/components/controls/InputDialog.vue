@@ -4,13 +4,13 @@ import {QInput} from 'quasar';
 
 const props = withDefaults(defineProps<{
     fieldLabel?: string,
-    showDialog?: boolean,
     startingValue?: string;
 }>(), {
     fieldLabel: 'Input value',
-    showDialog: false,
     startingValue: '',
 });
+
+const showDialog = defineModel<boolean>({default: false});
 
 const emit = defineEmits<{
     (e: 'close'): void,
@@ -18,28 +18,26 @@ const emit = defineEmits<{
 }>();
 
 const inputField = ref<string>('');
-const showDialogInternal = ref<boolean>(false);
 watchEffect(() => {
     inputField.value = props.startingValue;
-    showDialogInternal.value = props.showDialog;
 });
 
 
 const cancel = () => {
-    showDialogInternal.value = false;
+    showDialog.value = false;
     emit('close');
 };
 
 const saveChanges = (event: Event) => {
     emit('update', event, inputField.value);
-    showDialogInternal.value = false;
+    showDialog.value = false;
     emit('close');
 };
 </script>
 
 <template>
   <q-dialog
-      v-model="showDialogInternal"
+      v-model="showDialog"
       width="500"
       @show="($refs.input as QInput).select()"
   >
