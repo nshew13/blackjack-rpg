@@ -15,10 +15,21 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <q-btn icon="more_vert" size="small" padding="0" flat>
+  <q-btn
+    icon="more_vert"
+    size="small"
+    padding="0"
+    flat
+  >
     <q-menu auto-close>
       <q-list>
-        <q-item :disable="playersCount <= 1" clickable @click="emit('remove', player)">Remove</q-item>
+        <q-item
+          :disable="playersCount <= 1"
+          clickable
+          @click="emit('remove', player)"
+        >
+          Remove
+        </q-item>
       </q-list>
     </q-menu>
   </q-btn>

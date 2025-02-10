@@ -37,24 +37,34 @@ const saveChanges = (event: Event) => {
 
 <template>
   <q-dialog
-      v-model="showDialog"
-      width="500"
-      @show="($refs.input as QInput).select()"
+    v-model="showDialog"
+    width="500"
+    @show="($refs.input as QInput).select()"
   >
-    <q-card class="input-dialog" color="indigo-darken-3">
+    <q-card
+      class="input-dialog"
+      color="indigo-darken-3"
+    >
       <q-input
-          ref="input"
-          v-model="inputField"
-          :label="fieldLabel"
-          outlined
-          :autofocus="true"
-          @keyup.enter.stop="saveChanges"
-          @keyup.esc.stop="cancel"
-      ></q-input>
+        ref="input"
+        v-model="inputField"
+        :label="fieldLabel"
+        outlined
+        :autofocus="true"
+        @keyup.enter.stop="saveChanges"
+        @keyup.esc.stop="cancel"
+      />
 
       <q-card-actions>
-        <q-btn label="Cancel" @click.stop="cancel"></q-btn>
-        <q-btn label="Save" color="primary" @click.stop="saveChanges"></q-btn>
+        <q-btn
+          label="Cancel"
+          @click.stop="cancel"
+        />
+        <q-btn
+          label="Save"
+          color="primary"
+          @click.stop="saveChanges"
+        />
       </q-card-actions>
     </q-card>
   </q-dialog>

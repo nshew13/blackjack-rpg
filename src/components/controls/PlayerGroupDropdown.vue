@@ -31,27 +31,39 @@ const createGroup = () => {
 
 <template>
   <q-btn-dropdown
-      v-if="playerGroups.length > 0 || showAddGroup"
-      ref="playerGroupDropdown"
-      color="primary"
-      auto-close
-      :icon="icon"
-      :label="label"
+    v-if="playerGroups.length > 0 || showAddGroup"
+    ref="playerGroupDropdown"
+    color="primary"
+    auto-close
+    :icon="icon"
+    :label="label"
   >
-    <q-tooltip v-if="helpText">{{ helpText }}</q-tooltip>
+    <q-tooltip v-if="helpText">
+      {{ helpText }}
+    </q-tooltip>
     <q-list
-        class="player-group-list"
-        bordered
+      class="player-group-list"
+      bordered
     >
-      <q-item-label v-if="helpText" class="label">{{ helpText }}</q-item-label>
+      <q-item-label
+        v-if="helpText"
+        class="label"
+      >
+        {{ helpText }}
+      </q-item-label>
       <q-item
-          v-for="group in playerGroups"
-          :key="group.name"
-          clickable
-          @click="() => selectGroup(group)"
-      >{{ group.name }}
+        v-for="group in playerGroups"
+        :key="group.name"
+        clickable
+        @click="() => selectGroup(group)"
+      >
+        {{ group.name }}
       </q-item>
-      <q-item v-if="showAddGroup" clickable @click="createGroup">
+      <q-item
+        v-if="showAddGroup"
+        clickable
+        @click="createGroup"
+      >
         New group
       </q-item>
     </q-list>

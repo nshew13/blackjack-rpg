@@ -61,19 +61,22 @@ const flipCardUp = () => {
 
 <template>
   <div
-      class="card"
-      :class="cardClasses"
-      :style="getStyle"
-      @click="flipCardUp"
+    class="card"
+    :class="cardClasses"
+    :style="getStyle"
+    @click="flipCardUp"
   >
     <template v-if="card && isFaceUp">
       <div :class="faceClasses">
         {{ card.value }}
-        <SuitSymbol :suit="card.suit"></SuitSymbol>
+        <SuitSymbol :suit="card.suit" />
       </div>
-      <div v-if="cardSize === 'large'" class="corner bottom-right">
+      <div
+        v-if="cardSize === 'large'"
+        class="corner bottom-right"
+      >
         {{ card.value }}
-        <SuitSymbol :suit="card.suit"></SuitSymbol>
+        <SuitSymbol :suit="card.suit" />
       </div>
     </template>
   </div>

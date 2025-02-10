@@ -8,7 +8,10 @@ const props = defineProps<{
 </script>
 
 <template>
-    <!-- eslint-disable vue/no-v-html -- input is controlled -->
-    <div class="suit-symbol" v-html="PlayingCardUtils.getHtmlEntity(props.suit)"></div>
-    <!-- eslint-enable vue/no-v-html -->
+  <!-- eslint-disable vue/no-v-html -- input is controlled -->
+  <div
+    class="suit-symbol"
+    v-html="PlayingCardUtils.getHtmlEntity(props.suit)"
+  />
+  <!-- eslint-enable vue/no-v-html -->
 </template>

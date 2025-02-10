@@ -67,32 +67,57 @@ const showTotal = typeof props?.total !== 'undefined';
 </script>
 
 <template>
-  <div class="card-holder" :class="{ 'win': win, 'disable': disable, 'bust': bust }">
+  <div
+    class="card-holder"
+    :class="{ 'win': win, 'disable': disable, 'bust': bust }"
+  >
     <div class="header">
-      <q-avatar v-if="win" icon="verified" color="white" text-color="black"></q-avatar>
-      <slot name="header">{{ label }}</slot>
+      <q-avatar
+        v-if="win"
+        icon="verified"
+        color="white"
+        text-color="black"
+      />
+      <slot name="header">
+        {{ label }}
+      </slot>
     </div>
 
     <div class="card-row">
-      <div class="card-area" :class="{'single-column': singleColumn}" @click.stop="emit('deal')">
+      <div
+        class="card-area"
+        :class="{'single-column': singleColumn}"
+        @click.stop="emit('deal')"
+      >
         <slot :card-size="cardSize">
           <!-- expected <Card>(s) or <Deck> -->
         </slot>
-        <svg v-if="bust" class="bust-marker" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
-             viewBox="0 0 100 100">
+        <svg
+          v-if="bust"
+          class="bust-marker"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="none"
+          viewBox="0 0 100 100"
+        >
           <path d="M0 0 L100 100" />
           <path d="M0 100 L100 0" />
         </svg>
       </div>
 
-      <div v-if="showTotal" class="area-total">
+      <div
+        v-if="showTotal"
+        class="area-total"
+      >
         <span class="total-label">Total</span>
         <span>{{ totalText }}</span>
-        <slot name="side"></slot>
+        <slot name="side" />
       </div>
     </div>
 
-    <slot v-if="$slots.actions" name="actions"></slot>
+    <slot
+      v-if="$slots.actions"
+      name="actions"
+    />
   </div>
 </template>
 

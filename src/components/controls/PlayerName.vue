@@ -40,30 +40,33 @@ const setPlayerName = (updatedName: string) => {
 <template>
   <div class="player-name">
     {{ player.name }}
-    <q-icon class="edit-icon" name="edit"></q-icon>
+    <q-icon
+      class="edit-icon"
+      name="edit"
+    />
   </div>
 
   <q-popup-edit
-      v-model.trim="inputName"
-      auto-save
-      buttons
-      v-slot="scope"
-      :validate="validatePlayerName"
-      @hide="validatePlayerName"
-      @save="setPlayerName"
-      @show="($refs.input as QInput).select()"
+    v-slot="scope"
+    v-model.trim="inputName"
+    auto-save
+    buttons
+    :validate="validatePlayerName"
+    @hide="validatePlayerName"
+    @save="setPlayerName"
+    @show="($refs.input as QInput).select()"
   >
     <q-input
-        v-model.trim="scope.value"
-        ref="input"
-        label="Player name"
-        outlined
-        autofocus
-        :error="errorMessage !== ''"
-        :error-message="errorMessage"
-        @keyup.enter.stop="scope.set"
-        @keyup.esc.stop="scope.cancel"
-    ></q-input>
+      ref="input"
+      v-model.trim="scope.value"
+      label="Player name"
+      outlined
+      autofocus
+      :error="errorMessage !== ''"
+      :error-message="errorMessage"
+      @keyup.enter.stop="scope.set"
+      @keyup.esc.stop="scope.cancel"
+    />
   </q-popup-edit>
 </template>
 

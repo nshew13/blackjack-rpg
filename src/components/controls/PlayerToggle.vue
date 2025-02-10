@@ -10,12 +10,12 @@ const playerEnabled = defineModel<boolean>({default: true});
 
 <template>
   <q-toggle
-      v-model="playerEnabled"
-      v-bind="$attrs"
-      checked-icon="check"
-      color="positive"
-      unchecked-icon="clear"
-      @update="emit('update', playerEnabled)"
+    v-model="playerEnabled"
+    v-bind="$attrs"
+    checked-icon="check"
+    color="positive"
+    unchecked-icon="clear"
+    @update="emit('update', playerEnabled)"
   >
     <q-tooltip>
       {{ playerEnabled ? 'Disable' : 'Enable' }} player

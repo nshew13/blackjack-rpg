@@ -14,7 +14,12 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <q-btn class="remove-player" icon="close" v-bind="$attrs" @click.stop="emit('remove', player)">
+  <q-btn
+    class="remove-player"
+    icon="close"
+    v-bind="$attrs"
+    @click.stop="emit('remove', player)"
+  >
     <q-tooltip>
       Remove player
     </q-tooltip>

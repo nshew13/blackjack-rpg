@@ -37,7 +37,13 @@ const emitCardClick = (event: Event) => {
 </script>
 
 <template>
-  <div class="deck" @click.stop="emitCardClick">
-    <CardStandard v-if="topCard" v-model="topCard" />
+  <div
+    class="deck"
+    @click.stop="emitCardClick"
+  >
+    <CardStandard
+      v-if="topCard"
+      v-model="topCard"
+    />
   </div>
 </template>

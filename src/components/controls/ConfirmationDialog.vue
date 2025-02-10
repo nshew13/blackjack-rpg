@@ -27,13 +27,26 @@ const ok = () => {
 </script>
 
 <template>
-  <q-dialog v-model="showDialog" width="500">
-    <q-card class="confirmation-dialog" color="indigo-darken-3">
+  <q-dialog
+    v-model="showDialog"
+    width="500"
+  >
+    <q-card
+      class="confirmation-dialog"
+      color="indigo-darken-3"
+    >
       {{ message }}
 
       <q-card-actions>
-        <q-btn label="No" @click.stop="cancel"></q-btn>
-        <q-btn label="Yes" color="primary" @click.stop="ok"></q-btn>
+        <q-btn
+          label="No"
+          @click.stop="cancel"
+        />
+        <q-btn
+          label="Yes"
+          color="primary"
+          @click.stop="ok"
+        />
       </q-card-actions>
     </q-card>
   </q-dialog>

@@ -42,19 +42,19 @@ const addPlayerToNewGroup = (event: Event, newGroupName: string) => {
 
 <template>
   <InputDialog
-      field-label="Group name"
-      :show-dialog="showDialog"
-      :starting-value="`Group ${modelValue.length + 1}`"
-      @close="showDialog = false"
-      @update="addPlayerToNewGroup"
-  ></InputDialog>
+    field-label="Group name"
+    :show-dialog="showDialog"
+    :starting-value="`Group ${modelValue.length + 1}`"
+    @close="showDialog = false"
+    @update="addPlayerToNewGroup"
+  />
 
   <PlayerGroupDropdown
-      help-text="Add player to group"
-      icon="group_add"
-      :player-groups="modelValue"
-      show-add-group
-      @select="addPlayerToGroup"
-      @create="showDialog = true"
-  ></PlayerGroupDropdown>
+    help-text="Add player to group"
+    icon="group_add"
+    :player-groups="modelValue"
+    show-add-group
+    @select="addPlayerToGroup"
+    @create="showDialog = true"
+  />
 </template>
