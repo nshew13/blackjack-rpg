@@ -50,6 +50,13 @@ See the [Technical Stuff](./tech.md).
   - [ ] cards in each deck
   - [ ] cards in hands?
   - [ ] player setup (names, groups)
+ - [ ] auto-hold at 21
+ - [ ] BUG: can't hit with two aces
+ - [ ] BUG: dealer hidden ace still displays split score
+ - [ ] BUG: dealer stops with an ace, even when low side < house stay
+ - [ ] BUG: don't deal to disabled players
+ - [ ] keep score
+ - [ ] show icon for dealer wins, make more apparent for all
 
 ### Game-specific
 - [ ] separate draw deck for game randomization (i.e., one to build the world, the other for player skill checks)
