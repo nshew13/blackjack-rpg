@@ -54,7 +54,7 @@ See the [Technical Stuff](./tech.md).
  - [ ] BUG: can't hit with two aces
  - [ ] BUG: dealer hidden ace still displays split score
  - [ ] BUG: dealer stops with an ace, even when low side < house stay
- - [ ] BUG: don't deal to disabled players
+ - [x] BUG: don't deal to disabled players
  - [ ] keep score
  - [ ] show icon for dealer wins, make more apparent for all
 

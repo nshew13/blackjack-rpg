@@ -320,7 +320,11 @@ const dealToHouse = (skipWarning = false, facing: TCardFacing = 'up') => {
 // TODO: add turn over animation
 // TODO: add movement to card holder (hand)
 const dealToPlayer = (player: IPlayer) => {
-    if (standingPlayerIDs.has(player.uuid) || hasHouseRevealed.value) {
+    if (
+        standingPlayerIDs.has(player.uuid) ||
+        !player.enabled ||
+        hasHouseRevealed.value
+    ) {
         return;
     }
 
