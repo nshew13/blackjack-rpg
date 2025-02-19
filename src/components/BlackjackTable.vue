@@ -384,7 +384,7 @@ const handWins = (hand: TDeck): boolean => {
     return false;
 };
 
-const isEligibleForSplit = (hand: TDeck): boolean => hand.length === 2 && hand[0] === hand[1];
+const isEligibleForSplit = (hand: TDeck): boolean => hand.length === 2 && hand[0].value === hand[1].value;
 
 const removePlayer = (player: IPlayer) => {
     const playerIndex = players.findIndex(p => p.uuid === player.uuid);
@@ -649,11 +649,13 @@ watchEffect(() => {
               color="red"
             />
           </div>
-          <q-btn
-            v-if="isEligibleForSplit(playerHandsMap[player.uuid])"
-            label="Split"
-            @click.stop="splitHand(player)"
-          />
+          <div> <!-- prevent btn flex styling -->
+            <q-btn
+              v-if="isEligibleForSplit(playerHandsMap[player.uuid])"
+              label="Split"
+              @click.stop="splitHand(player)"
+            />
+          </div>
         </template>
       </CardHolder>
     </section>
