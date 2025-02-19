@@ -1,7 +1,10 @@
+<!-- component: ConfirmationDialog -->
 <script setup lang="ts">
-withDefaults(defineProps<{
+interface IProps {
     message?: string,
-}>(), {
+}
+
+withDefaults(defineProps<IProps>(), {
     message: 'Are you sure?',
 });
 
@@ -37,7 +40,7 @@ const ok = () => {
     >
       {{ message }}
 
-      <q-card-actions>
+      <q-card-actions align="right">
         <q-btn
           label="No"
           @click.stop="cancel"

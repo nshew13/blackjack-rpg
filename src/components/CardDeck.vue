@@ -1,3 +1,4 @@
+<!-- component: CardDeck -->
 <script setup lang="ts">
 import {computed} from 'vue';
 import CardStandard from '@/components/CardStandard.vue';

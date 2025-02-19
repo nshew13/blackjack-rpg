@@ -1,3 +1,4 @@
+<!-- component: PlayerToggle -->
 <script setup lang="ts">
 import type {IPlayer} from '@/types/IPlayer';
 

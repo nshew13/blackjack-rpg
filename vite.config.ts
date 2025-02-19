@@ -10,9 +10,6 @@ export default defineConfig({
   plugins: [
     vue({
       template: { transformAssetUrls },
-      /*script: {
-        defineModel: true, // experimental, see https://github.com/vuejs/rfcs/discussions/503
-      },*/
     }),
 
     // @quasar/plugin-vite options list:

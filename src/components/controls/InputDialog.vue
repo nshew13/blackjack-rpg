@@ -1,3 +1,4 @@
+<!-- component: InputDialog -->
 <script setup lang="ts">
 import {ref, watchEffect} from 'vue';
 import {QInput} from 'quasar';
@@ -55,7 +56,7 @@ const saveChanges = (event: Event) => {
         @keyup.esc.stop="cancel"
       />
 
-      <q-card-actions>
+      <q-card-actions align="right">
         <q-btn
           label="Cancel"
           @click.stop="cancel"

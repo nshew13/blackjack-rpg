@@ -484,7 +484,7 @@ watchEffect(() => {
 <template>
   <div class="table">
     <ConfirmationDialog
-      :show-dialog="showConfirmHouse"
+      v-model="showConfirmHouse"
       message="Do you want to reveal the House's hand?"
       @ok="revealHouseHand"
       @close="showConfirmHouse = false"

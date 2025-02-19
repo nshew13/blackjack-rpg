@@ -42,8 +42,8 @@ const addPlayerToNewGroup = (event: Event, newGroupName: string) => {
 
 <template>
   <InputDialog
+    v-model="showDialog"
     field-label="Group name"
-    :show-dialog="showDialog"
     :starting-value="`Group ${modelValue.length + 1}`"
     @close="showDialog = false"
     @update="addPlayerToNewGroup"
