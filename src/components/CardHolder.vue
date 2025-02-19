@@ -160,7 +160,7 @@ const totalText = computed(() => {
   --card-holder-width: calc(350px + var(--card-width) + var(--area-border-width) * 2);
 
   &.win {
-    --color-border: white; /* TODO: something that stands out, or animate */
+    --color-border: white;
     --color-label: white;
   }
 

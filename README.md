@@ -38,10 +38,12 @@ See the [Technical Stuff](./tech.md).
 - [ ] BUG: can't hit with two aces
 - [ ] BUG: dealer hidden ace still displays split score
 - [ ] BUG: dealer stops with an ace, even when low side < house stay
-- [ ] BUG: a House bust after a Player hold doesn't signal a win
+- [ ] BUG: a House (bust after a Player hold) doesn't signal a win
 - [ ] keep score
 - [ ] split hand
 - [ ] bulk add to group
+  - [ ] drag and drop player sorting, grouping
+  - [ ] player pinning (doesn't en/disable with group)
 - [ ] add unit test for shuffling
 - [ ] animate player dis/enabling (group change)
 - [ ] save/resume play state
@@ -54,6 +56,7 @@ See the [Technical Stuff](./tech.md).
   - [ ] number of decks
   - [ ] hand card size (large or small)
   - [ ] deck includes Jokers
+  - [ ] warning before revealing House hand
 - [x] BUG: don't deal to disabled players
 - [x] show icon for dealer wins
 - [x] make win icon more apparent for all

@@ -200,7 +200,6 @@ watch(() => playerGroups.length, (newLength, oldLength) => {
     }
 });
 
-// TODO: animate dis/enabling
 // activate a group of players, deactivate other groups
 watch(selectedGroupID, (newGroupID, oldGroupID) => {
     if(newGroupID && newGroupID !== oldGroupID) {
@@ -323,7 +322,6 @@ const dealTo = (hand: TDeck, facing: TCardFacing = 'up') => {
 const dealToHouse = (skipWarning = false, facing: TCardFacing = 'up') => {
     if(!skipWarning && !hasHouseRevealed.value) {
         // warn before revealing
-        // TODO: make this optional/configurable
         showConfirmHouse.value = true;
     } else if(!houseWins.value) {
         dealTo(houseHand.value, facing);
@@ -522,7 +520,6 @@ watchEffect(() => {
         </template>
       </CardHolder>
 
-      <!-- TODO: bulk add to group -->
       <div class="main-actions">
         <q-btn
           label="Add Player"
@@ -570,7 +567,6 @@ watchEffect(() => {
         card-size="small"
         @deal="dealToHouse"
       >
-        <!-- TODO: win isn't always working -->
         <template #header>
           <div class="player-name">
             House
@@ -596,8 +592,6 @@ watchEffect(() => {
         </template>
       </CardHolder>
 
-      <!-- TODO: allow d&d sorting -->
-      <!-- TODO: allow pinning -->
       <!-- players -->
       <CardHolder
         v-for="player in sortedPlayers"
@@ -669,7 +663,7 @@ watchEffect(() => {
         </template>
       </CardHolder>
     </section>
-    <!-- TODO:
+    <!--
     <CardHolder
     label="Split"
     v-if="splitDeck.length > 0"
