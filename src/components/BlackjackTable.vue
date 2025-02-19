@@ -193,6 +193,7 @@ watch(() => playerGroups.length, (newLength, oldLength) => {
 });
 
 // TODO: animate dis/enabling
+// activate a group of players, deactivate other groups
 watch(selectedGroupID, (newGroupID, oldGroupID) => {
     if(newGroupID && newGroupID !== oldGroupID) {
         players.forEach(player => {
@@ -554,7 +555,7 @@ watchEffect(() => {
       <!-- House -->
       <CardHolder
         :bust="houseIsBust"
-        :total="hasHouseRevealed ? blackjack.totalHand(houseHand) : -1"
+        :total="hasHouseRevealed ? blackjack.totalHand(houseHand) : void 0"
         :win="houseHasBlackjack || houseWins"
         card-size="small"
         @deal="dealToHouse"
@@ -579,7 +580,7 @@ watchEffect(() => {
               v-model="houseHand[index]"
               :card-size="cardSize"
               random-layout
-              @card-reveal="hasHouseRevealed = true"
+              @card-reveal="revealHouseHand"
             />
           </template>
         </template>

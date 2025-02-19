@@ -7,7 +7,15 @@ export type THandTotal = TSoftTotal | THardTotal;
 
 
 export class Blackjack extends PlayingCards {
-    readonly BLACKJACK = 21;
+    static readonly HAND_TOTAL_BLACKJACK = 21;
+
+    static isHardTotal(handTotal: THandTotal): handTotal is THardTotal {
+        return !Array.isArray(handTotal);
+    }
+
+    static isSoftTotal(handTotal: THandTotal): handTotal is TSoftTotal {
+        return Array.isArray(handTotal);
+    }
 
     getCardValue(card: ICard/* , params: IParamsCardValue */): number {
         switch (card.value) {
@@ -28,20 +36,21 @@ export class Blackjack extends PlayingCards {
     handHasBlackjack(hand: TDeck): boolean {
         const handTotal = this.totalHand(hand);
 
-        if (Array.isArray(handTotal)) {
+        if (Blackjack.isSoftTotal(handTotal)) {
             // totalHand would return only one total if blackjack
             return false;
         }
 
-        return hand.length === 2 && handTotal === this.BLACKJACK;
+        // Blackjack if only two cards
+        return hand.length === 2 && handTotal === Blackjack.HAND_TOTAL_BLACKJACK;
     }
 
     handIsBust(hand: TDeck): boolean {
         const total = this.totalHand(hand);
-        if (!Array.isArray(total)) {
-            return total > this.BLACKJACK;
+        if (Blackjack.isHardTotal(total)) {
+            return total > Blackjack.HAND_TOTAL_BLACKJACK;
         }
-        return total.every(total => total > this.BLACKJACK);
+        return total.every(total => total > Blackjack.HAND_TOTAL_BLACKJACK);
     }
 
     /**
@@ -68,7 +77,6 @@ export class Blackjack extends PlayingCards {
             }
         });
 
-
         // total non-aces
         const hardTotal = nonAces.reduce(
             (total, card) => {
@@ -94,12 +102,12 @@ export class Blackjack extends PlayingCards {
         }
 
         // If an 11 busts, we're down to one total.
-        if (softTotals[0] > this.BLACKJACK) {
+        if (softTotals[0] > Blackjack.HAND_TOTAL_BLACKJACK) {
             return softTotals[1];
         }
 
         // Likewise, if we have a blackjack, there's no reason for a soft total.
-        else if (hand.length === 2 && softTotals[0] === this.BLACKJACK) {
+        else if (hand.length === 2 && softTotals[0] === Blackjack.HAND_TOTAL_BLACKJACK) {
             return softTotals[0];
         }
 

@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import {computed} from 'vue';
 import type {TCardSize} from '@/utilities/PlayingCards';
-import type {THandTotal} from '@/utilities/Blackjack';
+import {Blackjack, type THandTotal} from '@/utilities/Blackjack';
 
-const props = withDefaults(defineProps<{
-    bust?: boolean,
-    cardSize?: TCardSize,
-    disable?: boolean,
-    label?: string,
-    singleColumn?: boolean,
-    total?: THandTotal,
-    win?: boolean,
-}>(), {
+// component: CardHolder
+
+interface IProps {
+    bust?: boolean;
+    cardSize?: TCardSize;
+    disable?: boolean;
+    label?: string;
+    singleColumn?: boolean;
+    total?: THandTotal;
+    win?: boolean;
+}
+
+const props = withDefaults(defineProps<IProps>(), {
     bust: false,
     cardSize: 'large',
     disable: false,
@@ -25,7 +29,11 @@ const emit = defineEmits<{
     (e: 'deal'): void,
 }>();
 
+// const allCardsVisible = computed(() => props.singleColumn ? 'center' : 'stretch');
+
 const headerAlign = computed(() => props.singleColumn ? 'center' : 'stretch');
+
+const isFinal = computed(() => props.win || props.bust);
 
 const cardHeight = computed(() => {
     switch (props.cardSize) {
@@ -49,21 +57,26 @@ const cardPadding = computed(() => {
     }
 });
 
+const showTotal = computed(() => typeof props?.total !== 'undefined');
+
 const totalText = computed(() => {
     if (typeof props.total === 'undefined') {
         return '';
     }
-    if (!Array.isArray(props.total)) {
+
+    if (Blackjack.isHardTotal(props.total)) {
         if (props.total <= 0) {
             return '--';
         }
         return props.total.toString();
     }
 
+    if (isFinal) {
+        return props.total[0].toString();
+    }
+
     return `${props.total[0]}/${props.total[1]}`;
 });
-
-const showTotal = typeof props?.total !== 'undefined';
 </script>
 
 <template>
