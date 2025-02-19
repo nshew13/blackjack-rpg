@@ -162,6 +162,14 @@ watch([playerHandsMap, hasHouseRevealed, houseIsBust], () => {
                 standingPlayerIDs.add(playerID);
             }
 
+            /*
+             * Check for a 21 to auto-stand. We don't have Blackjack,
+             * or we would've hit the previous condition.
+             */
+            else if(blackjack.totalHand(hand, true) === 21) {
+                standingPlayerIDs.add(playerID);
+            }
+
             if(blackjack.handIsBust(hand)) {
                 bustedPlayerIDs.add(playerID);
             } else if(handWins(hand)) { // includes blackjack

@@ -35,30 +35,30 @@ See the [Technical Stuff](./tech.md).
 ## To-do
 
 ### General
+- [ ] BUG: can't hit with two aces
+- [ ] BUG: dealer hidden ace still displays split score
+- [ ] BUG: dealer stops with an ace, even when low side < house stay
+- [ ] BUG: a House bust after a Player hold doesn't signal a win
+- [ ] keep score
 - [ ] split hand
+- [ ] bulk add to group
+- [ ] add unit test for shuffling
+- [ ] animate player dis/enabling (group change)
+- [ ] animate cards
+- [ ] save/resume play state
+    - [ ] config
+    - [ ] cards in each deck
+    - [ ] cards in hands?
+    - [ ] player setup (names, groups)
 - [ ] configure theme/palette
 - [ ] add configuration, including
   - [ ] number of decks
   - [ ] hand card size (large or small)
   - [ ] deck includes Jokers
-- [ ] bulk add to group
-- [ ] animate cards
-- [ ] animate player dis/enabling (group change)
-- [ ] add unit test for shuffling
-- [ ] save/resume play state
-  - [ ] config
-  - [ ] cards in each deck
-  - [ ] cards in hands?
-  - [ ] player setup (names, groups)
- - [ ] auto-hold at 21
- - [ ] BUG: can't hit with two aces
- - [ ] BUG: dealer hidden ace still displays split score
- - [ ] BUG: dealer stops with an ace, even when low side < house stay
- - [x] BUG: don't deal to disabled players
- - [ ] BUG: a House bust after a Player hold doesn't signal a win
- - [ ] keep score
- - [x] show icon for dealer wins
- - [x] make win icon more apparent for all
+- [x] BUG: don't deal to disabled players
+- [x] show icon for dealer wins
+- [x] make win icon more apparent for all
+- [x] auto-stand at 21
 
 ### Game-specific
 - [ ] separate draw deck for game randomization (i.e., one to build the world, the other for player skill checks)

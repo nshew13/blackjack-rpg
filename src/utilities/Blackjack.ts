@@ -59,9 +59,11 @@ export class Blackjack extends PlayingCards {
      * If two soft totals are returned, it is safe to assume that the first
      * will be the greater of the two.
      *
+     * To guarantee a single-total, you can specify bestOnly=true.
+     *
      * @param hand
      */
-    totalHand(hand: TDeck): THandTotal {
+    totalHand(hand: TDeck, bestOnly = false): THandTotal {
         if (!Array.isArray(hand)) {
             throw new Error('totalHand received unexpected value');
         }
@@ -101,13 +103,17 @@ export class Blackjack extends PlayingCards {
             softTotals[1]++;
         }
 
-        // If an 11 busts, we're down to one total.
+        // If an Ace-as-11 busts, we're down to one total.
         if (softTotals[0] > Blackjack.HAND_TOTAL_BLACKJACK) {
             return softTotals[1];
         }
 
         // Likewise, if we have a blackjack, there's no reason for a soft total.
         else if (hand.length === 2 && softTotals[0] === Blackjack.HAND_TOTAL_BLACKJACK) {
+            return softTotals[0];
+        }
+
+        if (bestOnly) {
             return softTotals[0];
         }
 
