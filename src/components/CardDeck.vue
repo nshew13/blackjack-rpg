@@ -4,10 +4,14 @@ import {computed} from 'vue';
 import CardStandard from '@/components/CardStandard.vue';
 import type {ICard, TCardFacing, TDeck} from '@/utilities/PlayingCards';
 
-const props = withDefaults(defineProps<{
+interface IProps {
+    animate?: boolean; // passes through to CardStandard
     // N.B.: a watch on cards will stop if/when the array is replaced with a new array (e.g., during reshuffle)
-    facing?: TCardFacing,
-}>(), {
+    facing?: TCardFacing;
+}
+
+const props = withDefaults(defineProps<IProps>(), {
+    animate: true,
     facing: 'down',
 });
 
@@ -45,6 +49,7 @@ const emitCardClick = (event: Event) => {
     <CardStandard
       v-if="topCard"
       v-model="topCard"
+      :animate="animate"
     />
   </div>
 </template>

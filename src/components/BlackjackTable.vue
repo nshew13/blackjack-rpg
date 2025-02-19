@@ -506,6 +506,7 @@ watchEffect(() => {
       >
         <CardDeck
           v-model="drawDeck"
+          :animate="false"
           @reshuffle="reshuffleDrawDeck"
         />
 
@@ -554,6 +555,7 @@ watchEffect(() => {
       >
         <CardDeck
           v-model="discardDeck"
+          :animate="false"
           facing="up"
         />
       </CardHolder>

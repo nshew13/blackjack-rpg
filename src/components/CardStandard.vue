@@ -5,10 +5,14 @@ import {PlayingCardUtils} from '@/utilities/PlayingCardUtils';
 import SuitSymbol from '@/components/SuitSymbol.vue';
 import type {ICard, TCardSize} from '@/utilities/PlayingCards';
 
-const props = withDefaults(defineProps<{
-    cardSize?: TCardSize,
-    randomLayout?: boolean
-}>(), {
+interface IProps {
+    animate?: boolean;
+    cardSize?: TCardSize;
+    randomLayout?: boolean;
+}
+
+const props = withDefaults(defineProps<IProps>(), {
+    animate: true,
     cardSize: 'large',
     randomLayout: false,
 });
@@ -18,6 +22,14 @@ const card = defineModel<ICard>({required: true});
 const emit = defineEmits<{
     (e: 'card-reveal'): void
 }>();
+
+const animationClasses = computed((): string => {
+    if (props.animate) {
+        return 'animated slideInDown faster';
+    }
+
+    return '';
+});
 
 const isFaceUp = computed(() => card.value?.facing === 'up');
 
@@ -61,26 +73,31 @@ const flipCardUp = () => {
 </script>
 
 <template>
-  <div
-    class="card"
-    :class="cardClasses"
-    :style="getStyle"
-    @click="flipCardUp"
+  <Transition
+    appear
+    :enter-active-class="animationClasses"
   >
-    <template v-if="card && isFaceUp">
-      <div :class="faceClasses">
-        {{ card.value }}
-        <SuitSymbol :suit="card.suit" />
-      </div>
-      <div
-        v-if="cardSize === 'large'"
-        class="corner bottom-right"
-      >
-        {{ card.value }}
-        <SuitSymbol :suit="card.suit" />
-      </div>
-    </template>
-  </div>
+    <div
+      class="card"
+      :class="cardClasses"
+      :style="getStyle"
+      @click="flipCardUp"
+    >
+      <template v-if="card && isFaceUp">
+        <div :class="faceClasses">
+          {{ card.value }}
+          <SuitSymbol :suit="card.suit" />
+        </div>
+        <div
+          v-if="cardSize === 'large'"
+          class="corner bottom-right"
+        >
+          {{ card.value }}
+          <SuitSymbol :suit="card.suit" />
+        </div>
+      </template>
+    </div>
+  </Transition>
 </template>
 
 <!--suppress CssUnusedSymbol -->

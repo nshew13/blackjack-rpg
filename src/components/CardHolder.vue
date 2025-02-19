@@ -1,9 +1,8 @@
+<!-- component: CardHolder -->
 <script setup lang="ts">
 import {computed} from 'vue';
 import type {TCardSize} from '@/utilities/PlayingCards';
 import {Blackjack, type THandTotal} from '@/utilities/Blackjack';
-
-// component: CardHolder
 
 interface IProps {
     bust?: boolean;

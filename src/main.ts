@@ -12,6 +12,7 @@ import '@quasar/extras/material-icons/material-icons.css';
 
 // Import animations from Animate.css:
 import '@quasar/extras/animate/heartBeat.css';
+import '@quasar/extras/animate/slideInDown.css';
 
 // Import Quasar css
 import 'quasar/dist/quasar.css';

@@ -44,7 +44,6 @@ See the [Technical Stuff](./tech.md).
 - [ ] bulk add to group
 - [ ] add unit test for shuffling
 - [ ] animate player dis/enabling (group change)
-- [ ] animate cards
 - [ ] save/resume play state
     - [ ] config
     - [ ] cards in each deck
@@ -59,6 +58,7 @@ See the [Technical Stuff](./tech.md).
 - [x] show icon for dealer wins
 - [x] make win icon more apparent for all
 - [x] auto-stand at 21
+- [x] animate cards
 
 ### Game-specific
 - [ ] separate draw deck for game randomization (i.e., one to build the world, the other for player skill checks)
