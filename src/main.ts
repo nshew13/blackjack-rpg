@@ -10,6 +10,9 @@ export const app = createApp(App);
 // Import icon libraries
 import '@quasar/extras/material-icons/material-icons.css';
 
+// Import animations from Animate.css:
+import '@quasar/extras/animate/heartBeat.css';
+
 // Import Quasar css
 import 'quasar/dist/quasar.css';
 

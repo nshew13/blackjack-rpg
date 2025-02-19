@@ -85,12 +85,17 @@ const totalText = computed(() => {
     :class="{ 'win': win, 'disable': disable, 'bust': bust }"
   >
     <div class="header">
-      <q-avatar
-        v-if="win"
-        icon="verified"
-        color="white"
-        text-color="black"
-      />
+      <Transition
+        appear
+        enter-active-class="animated heartBeat slower"
+      >
+        <q-avatar
+          v-if="win"
+          icon="verified"
+          color="white"
+          text-color="black"
+        />
+      </Transition>
       <slot name="header">
         {{ label }}
       </slot>

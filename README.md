@@ -55,8 +55,10 @@ See the [Technical Stuff](./tech.md).
  - [ ] BUG: dealer hidden ace still displays split score
  - [ ] BUG: dealer stops with an ace, even when low side < house stay
  - [x] BUG: don't deal to disabled players
+ - [ ] BUG: a House bust after a Player hold doesn't signal a win
  - [ ] keep score
- - [ ] show icon for dealer wins, make more apparent for all
+ - [x] show icon for dealer wins
+ - [x] make win icon more apparent for all
 
 ### Game-specific
 - [ ] separate draw deck for game randomization (i.e., one to build the world, the other for player skill checks)
