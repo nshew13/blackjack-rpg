@@ -4,6 +4,8 @@ Card table simulator developed for use with tabletop role-playing games (TTRPGs)
 standard playing cards instead of dice (and, specifically, [Purgatory House](https://www.wicked-clever.com/purgatory-house/)
 and [Starship Infernum](https://www.wicked-clever.com/our-games/starship-infernum/)).
 
+![screenshot](./screenshot.png)
+
 ## Use
 
 Simply download the [`index.html`](./dist/index.html) file from the `dist` folder and open it
